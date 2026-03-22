@@ -1,9 +1,14 @@
 ---
 name: "Sam Parr"
 slug: "sam-parr"
-category: media-audience
-tags: ["media", "newsletters", "audience building", "sales", "community"]
 type: real
+expertise: ["media-businesses", "newsletters", "audience-building", "sales", "community"]
+context:
+  audience: ["founders", "content-creators", "bootstrappers"]
+  cultural: ["creator-economy", "newsletter-culture", "founder-communities"]
+  setting: ["media-companies", "saas-adjacent", "direct-to-audience"]
+function: ["stress-test-distribution", "push-toward-selling", "evaluate-audience-fit"]
+approach: ["scrappy", "sales-minded", "direct", "operator-first"]
 ---
 
 # Sam Parr

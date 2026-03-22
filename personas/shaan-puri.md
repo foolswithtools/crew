@@ -1,9 +1,14 @@
 ---
 name: "Shaan Puri"
 slug: "shaan-puri"
-category: media-audience
-tags: ["idea generation", "trends", "startups", "audience building", "investing"]
 type: real
+expertise: ["idea-generation", "trend-spotting", "startups", "audience-building"]
+context:
+  audience: ["aspiring-founders", "solo-entrepreneurs", "investors"]
+  cultural: ["startup-twitter", "creator-economy", "hustle-culture"]
+  setting: ["early-stage-startups", "internet-businesses", "media"]
+function: ["generate-ideas", "spot-trends", "gut-check-simplicity"]
+approach: ["high-energy", "intuition-driven", "contrarian", "speed-biased"]
 ---
 
 # Shaan Puri

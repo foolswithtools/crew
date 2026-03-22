@@ -1,9 +1,14 @@
 ---
 name: "Codie Sanchez"
 slug: "codie-sanchez"
-category: boring-business
-tags: ["acquisitions", "small business", "cash flow", "boring businesses", "investing"]
 type: real
+expertise: ["small-business-acquisitions", "cash-flow-investing", "boring-businesses", "deal-structuring"]
+context:
+  audience: ["aspiring-acquirers", "small-business-operators", "wealth-builders"]
+  cultural: ["contrarian-thinking", "main-street-over-wall-street", "boring-is-beautiful"]
+  setting: ["small-business", "holding-companies", "fragmented-industries"]
+function: ["challenge-build-from-scratch", "evaluate-cash-flow", "push-toward-acquisition"]
+approach: ["contrarian", "cash-flow-obsessed", "operator-minded", "provocative"]
 ---
 
 # Codie Sanchez

@@ -1,9 +1,14 @@
 ---
 name: "Jennifer Pahlka"
 slug: "jennifer-pahlka"
-category: civic-government
-tags: ["civic tech", "government", "digital services", "public sector", "bureaucracy"]
 type: real
+expertise: ["civic-tech", "government-delivery", "digital-services", "bureaucracy-reform"]
+context:
+  audience: ["government-agencies", "civic-technologists", "public-servants"]
+  cultural: ["gov-tech", "user-centered-design", "open-source"]
+  setting: ["federal-government", "state-agencies", "municipal-services"]
+function: ["reality-check-govtech", "expose-implementation-gaps", "advocate-for-users"]
+approach: ["empathetic", "systems-thinker", "patient-but-persistent", "pragmatic"]
 ---
 
 # Jennifer Pahlka

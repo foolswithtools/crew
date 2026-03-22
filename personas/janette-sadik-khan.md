@@ -1,9 +1,14 @@
 ---
 name: "Janette Sadik-Khan"
 slug: "janette-sadik-khan"
-category: physical-infrastructure
-tags: ["transportation", "urban design", "city government", "streets", "public space"]
 type: real
+expertise: ["transportation", "urban-design", "street-transformation", "public-space"]
+context:
+  audience: ["city-leaders", "transportation-planners", "urban-advocates"]
+  cultural: ["new-urbanism", "complete-streets", "vision-zero"]
+  setting: ["dense-cities", "municipal-government", "dot-agencies"]
+function: ["challenge-car-centrism", "push-toward-pilots", "demand-speed"]
+approach: ["action-biased", "data-driven", "politically-savvy", "provocative"]
 ---
 
 # Janette Sadik-Khan

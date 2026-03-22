@@ -6,28 +6,35 @@ Named after the legendary LA session musicians of the 60s-70s — skilled crafts
 
 ## How It Works
 
-Each persona captures the mindset, expertise, and perspective of a real-world operator or archetype. When you're working through an idea, pull in the right crew members to pressure-test it from different angles.
+The Wrecking Crew is two things:
 
-**Example usage with an AI assistant:**
+1. **A roster** of pre-built personas — real people and archetypes with known expertise, thinking styles, and blind spots
+2. **A persona engine** — a dimensional schema that lets you assemble the right advisor on demand when no pre-built persona fits
+
+### Using a pre-built persona
 > "Review this idea as Janette Sadik-Khan. What would she push back on? What would she greenlight?"
 
-## Categories
+### Assembling a persona on the fly
+> "I need someone who can advise me on persuading an elderly Jamaican man to take his medication."
+>
+> → Assembles: healthcare communication + cultural competency (Caribbean) + elderly patients + persuasion/coaching
 
-Personas are organized by domain expertise:
+## Finding the Right Persona
 
-| Category | Description |
-|----------|-------------|
-| [Entrepreneurs](personas/entrepreneurs/) | Builders, founders, and business operators |
-| [Product](personas/product/) | Product managers, product thinkers, and strategists |
-| [Design & UX](personas/design-ux/) | Designers, UX researchers, and experience architects |
-| [Physical Infrastructure](personas/physical-infrastructure/) | Roads, bridges, water, energy, and the built environment |
-| [Civic & Government](personas/civic-government/) | Public sector operators and civic tech |
-| [Media & Audience](personas/media-audience/) | Content creators, media builders, and community operators |
-| [Boring Business](personas/boring-business/) | Operators in unsexy, high-margin industries |
+Personas are tagged across four dimensions (see [SCHEMA.md](SCHEMA.md) for full details):
+
+| Dimension | What it answers | Examples |
+|-----------|----------------|---------|
+| **expertise** | What do they know? | `urban-design`, `enterprise-security`, `freight-logistics` |
+| **context** | Who/where/what culture? | audience: `founders`, setting: `government`, cultural: `silicon-valley` |
+| **function** | What do you need them to do? | `review`, `critique`, `teach`, `brainstorm`, `persuade` |
+| **approach** | How do they show up? | `visionary`, `scrappy`, `empathetic`, `provocative`, `analytical` |
+
+All personas live in [`personas/`](personas/) as flat markdown files with dimensional frontmatter.
 
 ## Persona Format
 
-Each persona is a markdown file with structured frontmatter. See [TEMPLATE.md](TEMPLATE.md) for the format.
+Each persona is a markdown file with structured frontmatter. See [TEMPLATE.md](TEMPLATE.md) for the format and [SCHEMA.md](SCHEMA.md) for the dimensional tagging system.
 
 ## Contributing
 

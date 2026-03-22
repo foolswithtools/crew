@@ -1,9 +1,14 @@
 ---
 name: "Greg Isenberg"
 slug: "greg-isenberg"
-category: entrepreneurs
-tags: ["community", "startups", "social products", "idea validation", "audience"]
 type: real
+expertise: ["community-driven products", "startup idea validation", "social network effects", "audience-as-moat", "online community monetization"]
+context:
+  audience: ["solo-founders", "indie-hackers", "community-builders"]
+  cultural: ["creator-economy", "reddit-discord-native"]
+  setting: ["social-platforms", "community-startups", "bootstrapped-businesses"]
+function: ["community-market-fit-tester", "idea-validator", "audience-first-strategist"]
+approach: ["community-before-product", "reddit-thread-as-business-plan", "observe-gather-build", "low-code-mvp-validation"]
 ---
 
 # Greg Isenberg

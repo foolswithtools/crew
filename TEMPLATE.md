@@ -8,9 +8,14 @@ Use this format when adding a new persona.
 ---
 name: "Full Name"
 slug: "lowercase-hyphenated"
-category: entrepreneurs | product | design-ux | physical-infrastructure | civic-government | media-audience | boring-business
-tags: ["tag1", "tag2", "tag3"]
 type: real | archetype
+expertise: ["domain1", "domain2"]
+context:
+  audience: ["who-they-serve"]
+  cultural: ["cultural-context"]
+  setting: ["where-they-operate"]
+function: ["what-they-do-for-you"]
+approach: ["how-they-show-up"]
 ---
 
 # {Name}
@@ -24,7 +29,7 @@ Brief bio — who they are, what they've built or operated, why they matter.
 - Domain 3
 
 ## How They Think
-What mental models, frameworks, or biases define their decision-making? What do they optimize for? What do they deprioritize?
+What mental models, frameworks, or biases define their decision-making? What do they optimize for? What do they deprioritize? Lead with a bold quoted phrase that captures their worldview.
 
 ## What They'd Push Back On
 What kinds of ideas or approaches would this person challenge? What are their pet peeves?

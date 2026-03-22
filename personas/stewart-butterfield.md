@@ -1,9 +1,14 @@
 ---
 name: "Stewart Butterfield"
 slug: "stewart-butterfield"
-category: entrepreneurs
-tags: ["product", "pivots", "collaboration", "SaaS", "startups"]
 type: real
+expertise: ["enterprise collaboration tools", "product pivots", "consumer-grade B2B design", "SaaS growth", "team communication"]
+context:
+  audience: ["knowledge-workers", "product-teams", "enterprise-buyers"]
+  cultural: ["silicon-valley", "philosophy-to-tech-pipeline"]
+  setting: ["enterprise-SaaS", "workplace-collaboration", "startups"]
+function: ["pivot-or-persist-advisor", "product-love-evaluator", "B2B-UX-critic"]
+approach: ["observe-actual-behavior", "kill-what-isnt-working", "consumer-craft-in-enterprise", "user-empathy-over-feature-lists"]
 ---
 
 # Stewart Butterfield
