@@ -4,33 +4,53 @@ Living doc capturing the vision and design decisions. Updated as we go.
 
 ---
 
-## Status — MVP built and validated end-to-end (2026-04-18)
+## Status — MVP + full housekeeping plan (Phases 1-4) shipped (last updated 2026-04-19)
 
-**Shipped:**
-- 7 seed archetypes in `personas/`: rigorous-quant-ml-researcher, regime-aware-macro-thinker, data-honesty-skeptic, jobs-to-be-done-theorist, contrarian-simplicity-skeptic, continuous-discovery-pm, information-architect
-- 2 slash commands in `.claude/commands/`: `/crew` (Seeker) and `/crew-review` (Reviewer with Round 1 + optional Round 2 + orchestrator meta-synthesis)
-- Format spec (`SCHEMA.md`) and template (`TEMPLATE.md`) rewritten for the archetype-based model
-- End-to-end test walkthrough: `examples/stock-ml-use-case.md`
-- 49 pre-redesign personas preserved in `design/pre-redesign-archive/`
+**Shipped and on `origin/main`:**
+- **Catalog:** 9 archetypes in `personas/` — rigorous-quant-ml-researcher, regime-aware-macro-thinker, data-honesty-skeptic, classical-chartist (drafted inline during MVP e2e test, `reviewed: false`), jobs-to-be-done-theorist, contrarian-simplicity-skeptic, continuous-discovery-pm, information-architect, the-librarian (meta-archetype for catalog hygiene)
+- **Commands** in `.claude/commands/`: `/crew`, `/crew-review`, `/crew-review-archetype`, `/crew-browse`, `/crew-related`, `/crew-audit`
+- **Scripts** in `scripts/`: `validate.py`, `build-index.py`, `build-embeddings.py`, `build-graph.py`, `semantic-duplicate-check.py`, `embed-query.py`, `usage-log.py`, `deadwood-report.py`, `post-write-hook.py`
+- **Source-of-truth docs:** `SCHEMA.md`, `TEMPLATE.md`, `CONTRIBUTING.md`, `vocab/{expertise,function,approach}.yml` (SKOS within-facet + cross-facet)
+- **Automation:** `.claude/settings.json` PostToolUse hook validates and rebuilds all Layer 2 artifacts on every persona Write/Edit
+- **External deps:** `requirements.txt` (PyYAML, sentence-transformers, sqlite-vec, numpy) + gitignored `venv/`; hook re-execs through venv
 
-**End-to-end validation (stock-ML use case):**
-- `/crew`: reflection sharp, non-overlap held, voice quotes specific, alternative swap offered — ✓
-- `/crew-review` Round 1: parallel subagents fired, distinct voices, no blending — ✓
-- `/crew-review` Round 2: productive tension preserved (e.g., Macro Thinker vs. Quant on macro-as-conditioning vs. macro-as-leakage-surface) — ✓
-- Orchestrator meta-synthesis: convergences + tensions + concrete next step — ✓
-- **Inline-draft flow: not auto-triggered** — Claude chose a 3-archetype crew from the catalog instead of flagging a missing Chart-Reading Practitioner. Defensible and realistic; the flow exists and can be user-triggered ("add a pattern-reader archetype").
+**Derived Layer 2 artifacts (gitignored, auto-rebuilt):**
+- `catalog.json` — machine manifest with content hashes
+- `INDEX.md` — human browse, facet-grouped + Signals section (Trending / New this month) + Unreviewed section
+- `embeddings.sqlite` — 384-dim MiniLM vectors via sqlite-vec
+- `graph.json` — contrast edges (20), shared-exemplar edges (0 by design), frequently-paired-with edges (populated from usage log at count ≥ 2)
+- `.crew/usage.log` — JSONL invocation log; compacts to monthly aggregates past 90 days
+- `.crew/signals.json` — by-slug counts + last-invoked + trending top-5 + new-this-month
 
-**Open / parked items (in rough priority):**
-- **Housekeeping & scale** — detailed phased plan at [`design/housekeeping-plan.md`](design/housekeeping-plan.md). Phase 1 starts next: validator script, CONTRIBUTING.md, controlled-vocabulary files, strengthened `/crew` draft pre-flight. Architecture is 3-layer (source → derived indexes → tooling), targets 10K+ archetypes, borrows from faceted classification (Ranganathan), SKOS, dbt's compile pattern, Backstage catalog model, graph relationships, usage signals.
-- Vocabulary: still calling files in `personas/` but content says "archetype." Rename directory or leave — not blocking.
-- Dimensions IA raised: can a new user name the 3-5 dimensions archetypes vary along in 60 seconds?
-- Demand-moment evidence: does "I want critics on this" recur often enough to be a real product?
+**Commits on `origin/main` (discrete reset points):**
+- `75610f1` Phase 4: usage signals, trending, librarian, coverage audit, cross-facet SKOS
+- `e4df0d8` Phase 3: embedding index, semantic dedupe, relationship graph, navigation
+- `93169d2` Phase 2: build pipeline, write hook, SKOS vocab, review promotion
+- `fe05634` Phase 1: validator, controlled vocab, contribution guide
+- `1c643ea` Pivot to archetype model: build MVP with /crew commands + seed catalog
+
+**Validation (all gates clean as of last run):**
+- Validator: 9 files, 0 errors, 0 warnings
+- `build-index --check`: no drift
+- `build-embeddings --check`: no drift
+- `build-graph --check`: no drift
+- Semantic dedupe trips as designed (cosine 0.72 on disjoint-exemplar paraphrase of data-honesty-skeptic)
+- Hook fires correctly across non-persona / valid / malformed write scenarios
+
+**Open / parked items (nothing urgent):**
+- **Use it.** The catalog has scaled-up scaffolding but only 9 archetypes. Run `/crew` on real problems; let the catalog grow organically through gap-drafts. Observe what breaks at 20-50 archetypes that doesn't break at 9.
+- **Share it.** README still invites use, but the catalog is single-user today. Contributor outreach is the next axis of growth.
+- **Demand-moment evidence:** still unproven — does "I want critics on this" recur often enough to be a real product? The usage log now captures this; wait for signal.
+- **New territory (off the housekeeping plan):** web UI, multi-user, archetype versioning, domain-specific seed packs, auto-merge-suggestions between near-duplicates surfaced by embeddings.
+- Vocabulary cosmetic: directory is `personas/` but content says "archetype." Rename is cheap but not blocking.
 
 **To resume cold:**
-1. Read this Status block and "The simple version" below
-2. For the validated Seeker spec: `design/journey-seeker.md`
-3. For dogfood evidence the pattern works: `design/round1-journey-critiques.md` and `design/round2-journey-synthesis.md`
-4. To see the MVP in action: `examples/stock-ml-use-case.md`
+1. Read this Status block and "The simple version" below.
+2. For the validated Seeker journey spec: `design/journey-seeker.md`.
+3. For the full architecture + phase plan (all phases now Done): `design/housekeeping-plan.md`.
+4. For dogfood evidence the pattern works: `design/round1-journey-critiques.md` and `design/round2-journey-synthesis.md`.
+5. To see the end-to-end flow in action: `examples/stock-ml-use-case.md`.
+6. Tree on disk should be clean; `git log --oneline -5` shows the five commits above.
 
 ---
 
