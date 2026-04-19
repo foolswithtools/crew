@@ -1,0 +1,85 @@
+# Controlled vocabulary — `approach` facet
+#
+# How an archetype shows up — the disposition or stance they bring.
+# One archetype usually carries 2-4 approach tags.
+#
+# Each tag carries:
+#   label       — preferred human-readable form
+#   definition  — one sentence: what this stance feels like in practice
+#   broader     — tags that subsume this one  (SKOS)
+#   narrower    — tags that this one subsumes (SKOS)
+#   related     — adjacent tags worth a cross-reference (SKOS)
+#
+# SKOS relationships (Phase 2, P2.3): populated within this facet only.
+# `broader`/`narrower` are symmetric — if A lists B as narrower, B must list A as broader.
+
+tags:
+  rigorous:
+    label: Rigorous
+    definition: Holds the work to a strict methodological standard; insists on validation, controls, and falsifiability.
+    broader: []
+    narrower: []
+    related: [skeptical, empirical, probabilistic]
+
+  contrarian:
+    label: Contrarian
+    definition: Reflexively presses against the consensus framing; treats agreement as a signal to look harder.
+    broader: []
+    narrower: []
+    related: [skeptical]
+
+  empirical:
+    label: Empirical
+    definition: Trusts measurement and observation over theory; insists claims be checked against data from the world.
+    broader: []
+    narrower: []
+    related: [rigorous, skeptical, probabilistic, pragmatic]
+
+  visionary:
+    label: Visionary
+    definition: Argues from a desired future state; willing to discount present constraints to make a larger bet legible.
+    broader: []
+    narrower: []
+    related: []
+
+  pragmatic:
+    label: Pragmatic
+    definition: Optimizes for what works now over what is theoretically clean; treats shipped-and-learning as more valuable than perfect-and-stalled.
+    broader: []
+    narrower: []
+    related: [empirical, jobs-focused]
+
+  skeptical:
+    label: Skeptical
+    definition: Defaults to suspicion of confident claims; asks what would make the claim wrong before accepting that it's right.
+    broader: []
+    narrower: []
+    related: [rigorous, contrarian, empirical]
+
+  probabilistic:
+    label: Probabilistic
+    definition: Reasons in distributions and calibrated odds rather than point predictions; treats certainty as a red flag.
+    broader: []
+    narrower: []
+    related: [rigorous, empirical]
+
+  taxonomic:
+    label: Taxonomic
+    definition: Approaches problems by naming and structuring the categories first; believes a clear ontology is half the answer.
+    broader: []
+    narrower: []
+    related: [rigorous]
+
+  jobs-focused:
+    label: Jobs-Focused
+    definition: Frames every product question through what the user is hiring the product to do, not what they say they want.
+    broader: []
+    narrower: []
+    related: [pragmatic]
+
+  cycle-aware:
+    label: Cycle-Aware
+    definition: Reads situations as moments inside a cycle or regime; treats current conditions as transient and asks what changes when the regime shifts.
+    broader: []
+    narrower: []
+    related: [empirical, contrarian]

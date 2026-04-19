@@ -1,0 +1,78 @@
+# Controlled vocabulary — `function` facet
+#
+# What an archetype does to your work — the verb of their contribution.
+# One archetype usually carries 2-4 function tags.
+#
+# Each tag carries:
+#   label       — preferred human-readable form
+#   definition  — one sentence: what this function looks like in practice
+#   broader     — tags that subsume this one  (SKOS)
+#   narrower    — tags that this one subsumes (SKOS)
+#   related     — adjacent tags worth a cross-reference (SKOS)
+#
+# SKOS relationships (Phase 2, P2.3): populated within this facet only.
+# `broader`/`narrower` are symmetric — if A lists B as narrower, B must list A as broader.
+
+tags:
+  critique:
+    label: Critique
+    definition: Identifying weaknesses, gaps, or unstated assumptions in the work as presented.
+    broader: []
+    narrower: [stress-test, falsify, methodology-review]
+    related: []
+
+  stress-test:
+    label: Stress Test
+    definition: Probing whether the work holds up under adversarial conditions, edge cases, or load it wasn't designed for.
+    broader: [critique]
+    narrower: []
+    related: [falsify]
+
+  falsify:
+    label: Falsify
+    definition: Asking what evidence would prove the claim wrong, and checking whether that evidence has been seriously sought.
+    broader: [critique]
+    narrower: []
+    related: [stress-test, methodology-review]
+
+  synthesize:
+    label: Synthesize
+    definition: Pulling disparate signals into a single coherent frame the user can act on.
+    broader: []
+    narrower: []
+    related: [reframe, simplify]
+
+  teach:
+    label: Teach
+    definition: Explaining the underlying concept or discipline so the user can reason from first principles next time.
+    broader: []
+    narrower: []
+    related: [reframe]
+
+  reframe:
+    label: Reframe
+    definition: Restating the problem in a different shape — surfacing a question the user wasn't asking but should be.
+    broader: []
+    narrower: []
+    related: [synthesize, teach, discover]
+
+  simplify:
+    label: Simplify
+    definition: Cutting accidental complexity — naming what can be removed, deferred, or replaced with something smaller.
+    broader: []
+    narrower: []
+    related: [synthesize, reframe]
+
+  discover:
+    label: Discover
+    definition: Surfacing what the user doesn't yet know — unmet needs, untested assumptions, or unseen options.
+    broader: []
+    narrower: []
+    related: [reframe]
+
+  methodology-review:
+    label: Methodology Review
+    definition: Auditing the procedure that produced a result — sampling, controls, validation protocol — independent of the result itself.
+    broader: [critique]
+    narrower: []
+    related: [falsify]

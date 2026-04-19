@@ -1,0 +1,108 @@
+# Controlled vocabulary — `expertise` facet
+#
+# Domains of knowledge an archetype is grounded in. One archetype usually
+# carries 1-4 expertise tags. Add a new tag only when none of the existing
+# ones truly fit; bias toward reusing what's here.
+#
+# Each tag carries:
+#   label       — preferred human-readable form
+#   definition  — one sentence: what falls inside this domain
+#   broader     — tags that subsume this one  (SKOS)
+#   narrower    — tags that this one subsumes (SKOS)
+#   related     — adjacent tags worth a cross-reference (SKOS)
+#
+# SKOS relationships (Phase 2, P2.3): populated within this facet.
+# Cross-facet relationships are out of scope until Phase 4 (P4.5).
+# `broader`/`narrower` are symmetric — if A lists B as narrower, B must list A as broader.
+
+tags:
+  quantitative-finance:
+    label: Quantitative Finance
+    definition: Mathematical and statistical methods applied to financial markets, including pricing, portfolio construction, and systematic trading.
+    broader: []
+    narrower: []
+    related: [machine-learning, statistics, time-series, forecasting, technical-analysis, macro-economics]
+
+  machine-learning:
+    label: Machine Learning
+    definition: Building models that learn patterns from data, including supervised, unsupervised, and reinforcement methods.
+    broader: []
+    narrower: []
+    related: [statistics, forecasting, time-series, quantitative-finance]
+
+  statistics:
+    label: Statistics
+    definition: Inference, estimation, hypothesis testing, and uncertainty quantification under sampling and noise.
+    broader: []
+    narrower: [forecasting, time-series]
+    related: [machine-learning, epistemology, quantitative-finance]
+
+  macro-economics:
+    label: Macro Economics
+    definition: Economy-wide forces — growth, inflation, interest rates, capital flows, regimes, and policy.
+    broader: []
+    narrower: []
+    related: [behavioral-economics, quantitative-finance, forecasting]
+
+  technical-analysis:
+    label: Technical Analysis
+    definition: Reading price and volume action — chart patterns, trend, momentum, market structure — to anticipate market behavior.
+    broader: []
+    narrower: []
+    related: [quantitative-finance, behavioral-economics]
+
+  product-design:
+    label: Product Design
+    definition: Shaping what a product is and how it works — feature definition, flows, tradeoffs between scope, complexity, and user value.
+    broader: []
+    narrower: []
+    related: [user-research, information-architecture, behavioral-economics]
+
+  user-research:
+    label: User Research
+    definition: Investigating user needs, behaviors, contexts, and decision-making through interviews, observation, and experimentation.
+    broader: []
+    narrower: []
+    related: [product-design, information-architecture, behavioral-economics]
+
+  software-architecture:
+    label: Software Architecture
+    definition: Structuring software systems — components, boundaries, dependencies, and the long-lived decisions that constrain what's easy to change.
+    broader: []
+    narrower: []
+    related: []
+
+  information-architecture:
+    label: Information Architecture
+    definition: Structuring, labeling, and organizing information so people can find and understand it — taxonomies, navigation, ontologies.
+    broader: []
+    narrower: []
+    related: [product-design, user-research]
+
+  behavioral-economics:
+    label: Behavioral Economics
+    definition: How humans actually decide under uncertainty — biases, heuristics, framing effects, and the gap between rational-agent models and real behavior.
+    broader: []
+    narrower: []
+    related: [user-research, product-design, macro-economics, technical-analysis, epistemology]
+
+  forecasting:
+    label: Forecasting
+    definition: Producing calibrated probabilistic predictions about future events, and the discipline of tracking how those predictions performed.
+    broader: [statistics]
+    narrower: []
+    related: [machine-learning, time-series, quantitative-finance, macro-economics, epistemology]
+
+  time-series:
+    label: Time Series
+    definition: Methods for data ordered in time — non-stationarity, autocorrelation, regimes, walk-forward evaluation.
+    broader: [statistics]
+    narrower: []
+    related: [machine-learning, forecasting, quantitative-finance]
+
+  epistemology:
+    label: Epistemology
+    definition: How we know what we know — the conditions under which evidence justifies belief, and the failure modes of inference.
+    broader: []
+    narrower: []
+    related: [statistics, forecasting, behavioral-economics]
