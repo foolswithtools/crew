@@ -179,30 +179,6 @@ Layer 1 is the source of truth. Layer 2 is rebuilt from Layer 1. Layer 3 reads f
 
 Each phase is small enough to complete in one session.
 
-### Phase 3 — Real scale (500-5,000 archetypes)
-
-**Goal:** semantic retrieval; discover mode works; deadwood gets pruned.
-
-- [ ] **P3.1 — Embedding index**
-  - `scripts/build-embeddings.py` embeds each archetype's prose into vectors (use a small, local model or API)
-  - Store in `embeddings.sqlite` using `sqlite-vec`
-  - Rebuilt on Write hook (incremental — only re-embed changed files)
-- [ ] **P3.2 — Embedding-based duplicate detection**
-  - Replace Phase 2's Jaccard check with embedding similarity at draft time
-  - Threshold starts at cosine > 0.85 = "likely duplicate, review"; 0.7-0.85 = "related, declare intentional difference"
-- [ ] **P3.3 — Embedding-based retrieval in `/crew`**
-  - Embed the problem description; pre-filter archetypes by vector similarity (top-20 candidates) before LLM judgment. Scales `/crew` to catalogs where reading every archetype isn't feasible
-- [ ] **P3.4 — Graph of relationships (`graph.json`)**
-  - Parse `Not to be confused with` into contrast edges
-  - Derive `shares-exemplar` from frontmatter
-  - Derive `frequently-paired-with` from `.crew/usage.log`
-- [ ] **P3.5 — `/crew-browse` command**
-  - Facet-filtered listing at scale
-  - Usage: `/crew-browse expertise:machine-learning approach:rigorous`
-- [ ] **P3.6 — `/crew-related <slug>` command**
-  - Shows contrasts, complements, narrower/broader, exemplar-overlap
-  - Useful for navigation and for contributors checking non-duplication
-
 ### Phase 4 — Mature catalog (5,000+)
 
 **Goal:** self-maintaining; coverage-aware; authoritative.
@@ -244,9 +220,9 @@ Nothing from Phase 1 / 2 / 3 / 4 exists yet. No validator, no vocab files, no bu
 
 Pick up from here:
 
-1. **Phase 3 trigger is empirical, not time-based.** Do not start P3 (embeddings, semantic retrieval, graph) until the catalog actually strains Phase 2's tooling — roughly 50+ archetypes, or when duplicate detection starts missing semantic near-duplicates the Jaccard check can't see.
-2. **Fill the catalog** until that strain shows up. Use `/crew` to draft new archetypes; the post-write hook now validates and rebuilds automatically, and `/crew-review-archetype` promotes `reviewed: false` → `reviewed: true` once peer-reviewed.
-3. **Revisit the SKOS relationships periodically.** As new tags get added, keep the `broader`/`narrower`/`related` mappings current; the validator will warn on asymmetry but won't fail.
+1. **Fill the catalog** to exercise the Phase 3 tooling. `/crew` drafting now runs Jaccard/tag + semantic duplicate checks; the post-write hook rebuilds `catalog.json`, `INDEX.md`, `embeddings.sqlite`, and `graph.json` on every persona write; `/crew-browse` and `/crew-related` are available for navigation; `/crew-review-archetype` promotes `reviewed: false` → `true` after peer critique. The embedding ranker only meaningfully pre-filters once the catalog passes ~20 archetypes — until then, `/crew` still reads everything.
+2. **Revisit the SKOS relationships periodically.** As new tags get added, keep the `broader`/`narrower`/`related` mappings current; the validator will warn on asymmetry but won't fail.
+3. **Phase 4 trigger is empirical, not time-based.** Don't start P4 (usage signals, coverage audit, Librarian meta-archetype, cross-facet SKOS) until either the catalog clears ~5,000 entries or `.crew/usage.log` has accumulated enough invocations to drive deadwood + trending signals.
 
 ---
 
@@ -298,3 +274,39 @@ Pick up from here:
 - Layer 1 (source): `personas/*.md`, `vocab/*.yml` (now with SKOS), `SCHEMA.md`, `TEMPLATE.md`, `CONTRIBUTING.md`
 - Layer 2 (build artifacts, gitignored): `catalog.json`, `INDEX.md`
 - Layer 3 (tooling): `scripts/validate.py` (extended), `scripts/build-index.py` (new), `scripts/post-write-hook.py` (new), `.claude/settings.json` (new), `.claude/commands/{crew,crew-review,crew-review-archetype}.md`
+
+### Phase 3 — Real scale prep (at 8 archetypes, scaffolding for 500-5,000) — completed 2026-04-18
+
+**Outcome:** semantic retrieval, semantic dedupe, and the relationship graph are live; discover mode works end-to-end via the two new navigation commands. The catalog hasn't yet strained Phase 2's Jaccard/tag tooling — the user deliberately landed P3 early so the scaffolding exists before the strain does. Layer 2 now has three derived artifacts (`catalog.json`, `embeddings.sqlite`, `graph.json`), all rebuilt automatically by the post-write hook. Phase 3 also introduced the first external Python deps: `requirements.txt` + a gitignored `venv/`, with a hook that re-execs itself through `venv/bin/python3` so the core P1/P2 flow still works without the deps installed.
+
+- [x] **P3.1 — Embedding index**
+  - `scripts/build-embeddings.py` embeds each archetype's prose into vectors (use a small, local model or API)
+  - Store in `embeddings.sqlite` using `sqlite-vec`
+  - Rebuilt on Write hook (incremental — only re-embed changed files)
+  - Built. Uses `sentence-transformers/all-MiniLM-L6-v2` (384-dim, L2-normalised) stored in `archetype_vec` (sqlite-vec vec0 virtual table) with a companion `archetype_meta` table tracking slug → content_hash → vec_rowid. Modes: full reconcile, single-file upsert, `--check`. Skips re-embedding when content_hash matches. Validation: 8-file cold build, then a single whitespace edit to `data-honesty-skeptic.md` via Edit bumped only that slug's `embedded_at`; `--check` clean after revert.
+- [x] **P3.2 — Embedding-based duplicate detection**
+  - Replace Phase 2's Jaccard check with embedding similarity at draft time
+  - Threshold starts at cosine > 0.85 = "likely duplicate, review"; 0.7-0.85 = "related, declare intentional difference"
+  - Built `scripts/semantic-duplicate-check.py` — embeds the draft's prose body and dot-products against all vectors in `embeddings.sqlite` (vectors are L2-normalised, so dot = cosine). Emits JSON (top-5 matches + `max_cosine` + `trip_threshold` ∈ `{distinct, related, duplicate}`) with self-match filtering by display_name. Graceful degradation: missing deps or empty index → `embeddings_enabled: false`, caller falls back to Jaccard-only. Kept Jaccard/tag as the cheap first pass rather than replacing it: hybrid gives Jaccard a chance to catch exemplar-heavy duplicates even when the embedding index is unavailable, and the scored view in the reply now shows both signals. Updated `.claude/commands/crew.md`: added `Bash` to `allowed-tools`; added pre-flight check #5 that writes the draft to `.crew/draft-check.md`, runs the helper, surfaces the top-3 matches as visible lines, and blocks on `related` / `duplicate` verdicts until the drafter justifies. Validation: `.crew/test-forecasting-honesty-skeptic.md` — a disjoint-exemplar (Duke/Mellers/Makridakis) paraphrase of `data-honesty-skeptic` — scored cosine 0.83 (`related`), surfacing `data-honesty-skeptic` as the top match while every other archetype stayed ≤ 0.53 `distinct`. Jaccard on exemplars would have been 0 against data-honesty-skeptic; the semantic check caught the overlap the Jaccard check can't see.
+- [x] **P3.3 — Embedding-based retrieval in `/crew`**
+  - Embed the problem description; pre-filter archetypes by vector similarity (top-20 candidates) before LLM judgment. Scales `/crew` to catalogs where reading every archetype isn't feasible
+  - Built `scripts/embed-query.py` — embeds problem text from stdin (or `--slug <name>` to query by a stored vector, which P3.6 uses) and ranks all archetypes by cosine. Defaults to top-20. Same graceful-degradation contract as the duplicate check. Updated `.claude/commands/crew.md` to gate on catalog size: ≤ 20 archetypes → Read everything (unchanged from P2); > 20 → pipe the Problem-I'm-hearing synthesis through `embed-query.py`, Read only top-20. Validation: a keyword-dense finance query ("backtest harness futures regime shift drawdown out-of-sample quant methodology") returns rigorous-quant-ml / data-honesty / regime-aware as the top 3; a looser natural-language version of the same question still lands the three finance archetypes in the top 4 (smaller signal is a quirk of the 8-archetype scale + MiniLM — at 50+ archetypes the ranking quality improves substantially).
+- [x] **P3.4 — Graph of relationships (`graph.json`)**
+  - Parse `Not to be confused with` into contrast edges
+  - Derive `shares-exemplar` from frontmatter
+  - Derive `frequently-paired-with` from `.crew/usage.log`
+  - Built `scripts/build-graph.py`. Parses each persona's `## Not to be confused with` section via regex `- **<name>** — <reason>` (em-dash or double-hyphen tolerated, multi-line bullets joined), resolves bold names against catalog display_names, and emits `graph.json` with `nodes`, `edges.contrasts` (directed), `edges.shares_exemplar` (undirected, derived from frontmatter exemplar-overlap), and `edges.frequently_paired_with: []` (deferred to Phase 4 when usage logging lands). Unresolved bold names print `WARNING:` to stderr. `--check` mode compares a stable shape (with `generated_at` stripped) for idempotency. Wired into `scripts/post-write-hook.py` — runs after `build-index.py`, non-blocking on failure. Validation: 17 contrast edges (0 unresolved-name warnings); 0 shared-exemplar edges (archetypes are disjoint by design, which is itself a useful diagnostic); `classical-chartist` has 3 outgoing contrast edges as expected; `--check` clean after hook run.
+- [x] **P3.5 — `/crew-browse` command**
+  - Facet-filtered listing at scale
+  - Usage: `/crew-browse expertise:machine-learning approach:rigorous`
+  - Built `.claude/commands/crew-browse.md` (allowed-tools: Read). Parses `$ARGUMENTS` as `<facet>:<value[,value,…]>` tuples; AND across facets, OR within. No args → facet/tag table of contents, listing only tags with ≥ 1 archetype plus an unreviewed section. Reads `catalog.json` for the source of truth. Zero-match path prints the filter and offers a one-relaxation suggestion (the tightest facet drop). Validation (via direct filter simulation against catalog.json): `expertise:statistics` → 2 archetypes (data-honesty, rigorous-quant); `approach:rigorous` → 3 (data-honesty, information-architect, rigorous-quant); `expertise:product-design function:critique` → 4 (all four product archetypes); `expertise:machine-learning approach:contrarian` → 0 (expected). Command is registered (visible as `/crew-browse` in the skills list).
+- [x] **P3.6 — `/crew-related <slug>` command**
+  - Shows contrasts, complements, narrower/broader, exemplar-overlap
+  - Useful for navigation and for contributors checking non-duplication
+  - Built `.claude/commands/crew-related.md` (allowed-tools: Read, Bash). Resolves the target by slug first, then case-insensitive display_name; suggests the 3 closest candidates on miss rather than guessing. Produces four sections: **Contrasts** (directed; reads `graph.json` for outgoing/incoming edges, surfaces the verbatim "Not to be confused with" reason rather than paraphrasing — paraphrasing loses the load-bearing distinction), **Shared exemplars** (from `graph.json`; "none" when disjoint is kept as a diagnostic), **Semantic neighbors** (via `scripts/embed-query.py --slug <target> --top 5` — this is what the `--slug` mode was added for), **Vocab neighbors** (loads `vocab/*.yml` + `catalog.json`, walks each target tag's broader/narrower/related to find other archetypes sharing any related tag, prefers narrower/broader in the top-5 cap). Every section degrades gracefully on missing inputs. Validation via direct graph/embedding inspection for `rigorous-quant-ml-researcher`: 2 outgoing contrasts (data-honesty, regime-aware), 3 incoming contrasts (classical-chartist, data-honesty, regime-aware) — all 5 edges verbatim with reasons; 0 shared exemplars (expected); top-5 semantic neighbors include all three finance archetypes (data-honesty 0.53, regime-aware 0.46, classical-chartist 0.40); vocab paths through `critique → narrower` and `statistics → narrower` populate the SKOS section. Command registered (visible as `/crew-related`).
+
+**Repo shape after Phase 3:**
+- Layer 1 (source): `personas/*.md`, `vocab/*.yml`, `SCHEMA.md`, `TEMPLATE.md`, `CONTRIBUTING.md` (now with setup stanza), `requirements.txt` (new)
+- Layer 2 (build artifacts, gitignored): `catalog.json`, `INDEX.md`, `embeddings.sqlite` (new), `graph.json` (new)
+- Layer 3 (tooling): `scripts/validate.py`, `scripts/build-index.py`, `scripts/post-write-hook.py` (extended to run embeddings + graph and re-exec into venv), `scripts/build-embeddings.py` (new), `scripts/semantic-duplicate-check.py` (new), `scripts/embed-query.py` (new), `scripts/build-graph.py` (new), `.claude/settings.json`, `.claude/commands/{crew (extended),crew-review,crew-review-archetype,crew-browse (new),crew-related (new)}.md`
+- Dev env: repo-local `venv/` (gitignored) with PyYAML + sentence-transformers + sqlite-vec + numpy; hook hops into it automatically when present

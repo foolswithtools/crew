@@ -16,15 +16,42 @@ Docs: https://code.claude.com/docs/en/hooks.md
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PERSONAS_DIR = REPO_ROOT / "personas"
+VENV_PY = REPO_ROOT / "venv" / "bin" / "python3"
+
+
+def maybe_reexec_with_venv() -> None:
+    """If a repo-local venv exists and we're not already in it, re-exec.
+
+    Phase 3 scripts need sentence-transformers / sqlite-vec, which live in
+    the venv. Settings.json invokes this hook with plain `python3`, so we
+    hop into the venv here when present. No-op if the venv is absent or we
+    are already running from it.
+
+    Uses `sys.prefix != sys.base_prefix` as the "inside a venv" signal —
+    resolving VENV_PY through its symlinks lands on the base interpreter,
+    which would falsely make an outside process look like the same target.
+    """
+    if not VENV_PY.exists():
+        return
+    if getattr(sys, "base_prefix", sys.prefix) != sys.prefix:
+        return
+    os.execv(str(VENV_PY), [str(VENV_PY), *sys.argv])
+
+
+def run(cmd: list[str]) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(REPO_ROOT))
 
 
 def main() -> int:
+    maybe_reexec_with_venv()
+
     try:
         payload = json.load(sys.stdin)
     except json.JSONDecodeError as e:
@@ -47,21 +74,30 @@ def main() -> int:
 
     rel = file_path.relative_to(REPO_ROOT)
 
-    validate = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "scripts" / "validate.py"), str(file_path)],
-        capture_output=True, text=True, cwd=str(REPO_ROOT),
-    )
+    validate = run([sys.executable, str(REPO_ROOT / "scripts" / "validate.py"), str(file_path)])
     if validate.returncode != 0:
         sys.stderr.write(f"validator failed on {rel}:\n{validate.stdout}{validate.stderr}")
         return 2
 
-    build = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "scripts" / "build-index.py")],
-        capture_output=True, text=True, cwd=str(REPO_ROOT),
-    )
+    build = run([sys.executable, str(REPO_ROOT / "scripts" / "build-index.py")])
     if build.returncode != 0:
         sys.stderr.write(f"build-index failed after {rel}:\n{build.stdout}{build.stderr}")
         return 2
+
+    # Derived artifacts beyond catalog.json — non-blocking. Failures here are
+    # reported but do not reject the persona edit (embeddings + graph are
+    # rebuildable from Layer 1 at any time).
+    emb_script = REPO_ROOT / "scripts" / "build-embeddings.py"
+    if emb_script.exists():
+        emb = run([sys.executable, str(emb_script), str(file_path)])
+        if emb.returncode != 0:
+            sys.stderr.write(f"build-embeddings warning for {rel}:\n{emb.stdout}{emb.stderr}")
+
+    graph_script = REPO_ROOT / "scripts" / "build-graph.py"
+    if graph_script.exists():
+        graph = run([sys.executable, str(graph_script)])
+        if graph.returncode != 0:
+            sys.stderr.write(f"build-graph warning for {rel}:\n{graph.stdout}{graph.stderr}")
 
     sys.stderr.write(f"post-write-hook: {rel} validated, catalog rebuilt\n")
     return 0

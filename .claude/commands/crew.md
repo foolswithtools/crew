@@ -1,7 +1,7 @@
 ---
 description: Propose a crew of archetype critics for your current work. Reads your recent conversation or an explicit problem description, reflects it back, and suggests 3-4 non-overlapping critics from the catalog (drafting a new one inline if a needed archetype is missing).
 argument-hint: [optional problem description — if omitted, reads conversation context]
-allowed-tools: Read, Glob, Write
+allowed-tools: Read, Glob, Write, Bash
 ---
 
 # /crew — Propose a crew of archetype critics
@@ -16,7 +16,15 @@ If `$ARGUMENTS` contains a problem description, treat that as the brain-dump. Ot
 
 ### 2. Load the catalog
 
-Use `Glob` to list `personas/*.md`, then `Read` every file. Each archetype has YAML frontmatter (`name`, `display_name`, `exemplars`, `expertise`, `function`, `approach`) and five prose sections (Exemplars & coherence · Shared philosophy · What they push on · Blind spots · Not to be confused with).
+**At small catalog size (≤ 20 archetypes):** `Read catalog.json` for the manifest, then `Glob personas/*.md` and `Read` every file. Each archetype has YAML frontmatter (`name`, `display_name`, `exemplars`, `expertise`, `function`, `approach`) and five prose sections (Exemplars & coherence · Shared philosophy · What they push on · Blind spots · Not to be confused with).
+
+**At larger catalogs (> 20 archetypes):** use the embedding index as a pre-filter so you don't read every file. Pipe your one-paragraph **Problem I'm hearing** synthesis (from step 1) into the ranker, then read only the top matches plus any you suspect are adjacent:
+
+```
+echo "<problem synthesis>" | python3 scripts/embed-query.py --top 20
+```
+
+The helper emits JSON with `ranked` (slug + display_name + cosine). Read the top-20 personas files. If the helper prints `"embeddings_enabled": false` (deps missing or `embeddings.sqlite` absent), fall back to reading every file — don't block. Record a one-line note in your reply if you used the pre-filter (e.g. `embedding pre-filter: 20 of N archetypes loaded`).
 
 ### 3. Produce the reflection
 
@@ -98,6 +106,23 @@ For each existing archetype, compute two numbers:
    - Otherwise: state "below threshold, proceeding" after the closest match line.
 
    Do not call `Write` until the check line is in your reply and (if tripped) the user has given explicit justification.
+
+**5. Run the semantic duplicate check against the embedding index.**
+The Jaccard/tag check above is a cheap first pass; it won't catch paraphrases of existing archetypes with disjoint exemplars and tags. This second pass does. Procedure:
+
+   1. Write the full proposed draft (frontmatter + all five prose sections, exactly what you're about to `Write` to `personas/`) to `.crew/draft-check.md`. The `.crew/` directory is gitignored and the post-write hook ignores writes outside `personas/`, so this scratch file won't trigger index rebuilds.
+   2. Run `python3 scripts/semantic-duplicate-check.py .crew/draft-check.md` via `Bash`. It prints JSON with `top_matches` (top 5 by cosine similarity), `max_cosine`, and `trip_threshold` (one of `distinct` / `related` / `duplicate`).
+   3. Surface the top 3 matches in your reply as a visible line, one per match:
+
+      ```
+      Semantic match: <display_name> — cosine 0.XX (<verdict>)
+      ```
+
+   4. **Thresholds:**
+      - `cosine > 0.85` (`duplicate`) → **stop.** The draft is semantically near-identical to an existing archetype. Name the match, state the specific philosophical difference that would justify a new archetype rather than refining the existing one, and wait for explicit user approval before `Write`.
+      - `0.70 ≤ cosine ≤ 0.85` (`related`) → **stop.** Write out the intentional difference in 1-2 sentences naming what is load-bearing about this new school that the matched archetype doesn't cover. The user can then approve.
+      - `cosine < 0.70` (`distinct`) → state "below semantic threshold, proceeding."
+   5. If the helper prints `"embeddings_enabled": false` (missing deps or empty index), say so in the reply and proceed on the Jaccard/tag check alone — don't block on a missing derived artifact.
 
 #### Save
 

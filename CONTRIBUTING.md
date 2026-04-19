@@ -12,6 +12,18 @@ You should be contributing to this catalog if:
 
 You should *not* be contributing if you're trying to add your favorite famous person, build out a category for completeness, or import a list of "important thinkers" from somewhere. The catalog grows where pull exists.
 
+## One-time setup
+
+Phase 3 scripts (embeddings, semantic dedupe, graph) rely on a few Python deps. Create a repo-local venv and install them once:
+
+```bash
+uv venv venv --python 3.12   # or: python3.12 -m venv venv
+source venv/bin/activate
+uv pip install -r requirements.txt   # or: pip install -r requirements.txt
+```
+
+The `venv/` directory is gitignored. The post-write hook automatically uses `venv/bin/python3` when present; if the venv is absent, the core P1/P2 flow (validator, index, Jaccard dedupe) still works — just the embedding-related steps are skipped with a notice.
+
 ## How to add an archetype by hand
 
 There are two paths. Both end at the same validator.

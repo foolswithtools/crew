@@ -7,6 +7,11 @@ graph.json
 # Runtime state
 .crew/
 
+# Python venv (Phase 3 deps)
+venv/
+__pycache__/
+*.pyc
+
 # OS / editor
 .DS_Store
 *.swp
