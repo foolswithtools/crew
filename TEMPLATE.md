@@ -1,50 +1,56 @@
-# Persona Template
+# Archetype Template
 
-Use this format when adding a new persona.
-
----
+Copy this to `personas/<your-slug>.md` and fill in. See [`SCHEMA.md`](SCHEMA.md) for the format spec and the coherence test.
 
 ```markdown
 ---
-name: "Full Name"
-slug: "lowercase-hyphenated"
-type: real | archetype
-expertise: ["domain1", "domain2"]
-context:
-  audience: ["who-they-serve"]
-  cultural: ["cultural-context"]
-  setting: ["where-they-operate"]
-function: ["what-they-do-for-you"]
-approach: ["how-they-show-up"]
+name: archetype-slug
+display_name: The Archetype Name
+exemplars:
+  - Person One
+  - Person Two
+  - Person Three
+expertise: [domain1, domain2]
+function: [critique, stress-test]
+approach: [rigorous, skeptical]
+reviewed: false
 ---
 
-# {Name}
+# The Archetype Name
 
-## Who They Are
-Brief bio — who they are, what they've built or operated, why they matter.
+## Exemplars & coherence
 
-## Expertise
-- Domain 1
-- Domain 2
-- Domain 3
+[1 paragraph: name the exemplars and the coherent thread that binds them. Acknowledge differences but make explicit the ~80% first-principles agreement that justifies grouping them.]
 
-## How They Think
-What mental models, frameworks, or biases define their decision-making? What do they optimize for? What do they deprioritize? Lead with a bold quoted phrase that captures their worldview.
+## Shared philosophy
 
-## What They'd Push Back On
-What kinds of ideas or approaches would this person challenge? What are their pet peeves?
+- [Core belief 1 — specific to this school]
+- [Core belief 2]
+- [Core belief 3]
+- [...]
 
-## What They'd Greenlight
-What gets them excited? What signals would make them say "do this now"?
+## What they push on
 
-## Blind Spots
-Where might this person's perspective fall short? What do they tend to miss or undervalue?
+- [Characteristic question, quoted as they would ask it]
+- [Specific challenge they raise]
+- [Specific concern]
+- [...]
 
-## Key Quotes / Principles
-Real or attributed quotes and principles that capture their worldview.
+## Blind spots
 
-## Use This Persona When...
-- Scenario 1
-- Scenario 2
-- Scenario 3
+- [What this school systematically misses]
+- [What it underweights]
+- [...]
+
+## Not to be confused with
+
+- [Adjacent archetype name] — [one specific difference]
+- [...]
 ```
+
+## Before committing
+
+- [ ] Coherence test: exemplars agree on ~80% of first principles
+- [ ] No duplicate: grep `display_name` and exemplars across `personas/` to check
+- [ ] "Not to be confused with" names at least one nearby archetype
+- [ ] Voice lines in "What they push on" are specific enough to differ from other archetypes
