@@ -1,7 +1,7 @@
 ---
 description: Run Round 1 independent critique with your chosen crew, followed by optional Round 2 synthesis. Launches each archetype as a parallel subagent so voices stay distinct.
 argument-hint: [optional comma-separated archetype slugs — if omitted, uses the crew from the most recent /crew output]
-allowed-tools: Read, Glob
+allowed-tools: Read, Glob, Bash
 ---
 
 # /crew-review — Run critique with the chosen crew
@@ -152,6 +152,16 @@ After all Round 2 outputs are presented, write a brief orchestrator synthesis as
 ```
 
 Keep this section under 250 words. You're summarizing, not adding another voice.
+
+### 9. Log the invocation
+
+After the orchestrator synthesis is in your reply, append one JSONL entry to `.crew/usage.log` capturing the crew that was actually reviewed. Run via `Bash`:
+
+```
+python3 scripts/usage-log.py append '{"command":"crew-review","archetypes":["<slug1>","<slug2>","<slug3>","<slug4>"],"problem_hash":null,"flagged_bad_fit":[]}'
+```
+
+`archetypes` is the full crew that ran (same in Round 1 and Round 2). `flagged_bad_fit` is only populated if the user explicitly called out an archetype as a poor match during the session — otherwise leave it as `[]`. This step is bookkeeping; don't narrate it to the user unless the command fails.
 
 ## Rules
 

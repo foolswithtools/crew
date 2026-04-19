@@ -12,6 +12,12 @@
 #
 # SKOS relationships (Phase 2, P2.3): populated within this facet only.
 # `broader`/`narrower` are symmetric — if A lists B as narrower, B must list A as broader.
+#
+# Cross-facet relationships (Phase 4, P4.5):
+#   cross_facet_related  — map keyed by target facet (expertise / function),
+#                          values = list of tag slugs in that facet. Derived
+#                          from observed co-occurrence in the catalog at
+#                          threshold ≥ 2 archetypes. Must be symmetric.
 
 tags:
   rigorous:
@@ -20,6 +26,9 @@ tags:
     broader: []
     narrower: []
     related: [skeptical, empirical, probabilistic]
+    cross_facet_related:
+      expertise: [epistemology, information-architecture, statistics]
+      function: [critique, falsify, methodology-review, stress-test]
 
   contrarian:
     label: Contrarian
@@ -27,6 +36,8 @@ tags:
     broader: []
     narrower: []
     related: [skeptical]
+    cross_facet_related:
+      function: [critique, stress-test]
 
   empirical:
     label: Empirical
@@ -34,6 +45,9 @@ tags:
     broader: []
     narrower: []
     related: [rigorous, skeptical, probabilistic, pragmatic]
+    cross_facet_related:
+      expertise: [behavioral-economics, product-design, quantitative-finance, statistics, user-research]
+      function: [critique, discover, falsify, reframe, stress-test]
 
   visionary:
     label: Visionary
@@ -41,6 +55,7 @@ tags:
     broader: []
     narrower: []
     related: []
+    cross_facet_related: {}
 
   pragmatic:
     label: Pragmatic
@@ -48,6 +63,9 @@ tags:
     broader: []
     narrower: []
     related: [empirical, jobs-focused]
+    cross_facet_related:
+      expertise: [product-design]
+      function: [critique, stress-test]
 
   skeptical:
     label: Skeptical
@@ -55,6 +73,9 @@ tags:
     broader: []
     narrower: []
     related: [rigorous, contrarian, empirical]
+    cross_facet_related:
+      expertise: [statistics]
+      function: [critique, falsify, stress-test]
 
   probabilistic:
     label: Probabilistic
@@ -62,6 +83,7 @@ tags:
     broader: []
     narrower: []
     related: [rigorous, empirical]
+    cross_facet_related: {}
 
   taxonomic:
     label: Taxonomic
@@ -69,6 +91,9 @@ tags:
     broader: []
     narrower: []
     related: [rigorous]
+    cross_facet_related:
+      expertise: [information-architecture]
+      function: [critique]
 
   jobs-focused:
     label: Jobs-Focused
@@ -76,6 +101,7 @@ tags:
     broader: []
     narrower: []
     related: [pragmatic]
+    cross_facet_related: {}
 
   cycle-aware:
     label: Cycle-Aware
@@ -83,3 +109,6 @@ tags:
     broader: []
     narrower: []
     related: [empirical, contrarian]
+    cross_facet_related:
+      expertise: [behavioral-economics, quantitative-finance]
+      function: [critique, reframe]

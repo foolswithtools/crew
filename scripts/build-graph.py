@@ -9,8 +9,11 @@ Edge types:
                              from the file's archetype to the named one.
     shares_exemplar        — undirected. Any pair of archetypes that share
                              ≥ 1 exemplar (case-normalised) get one edge.
-    frequently_paired_with — deferred. Requires `.crew/usage.log`, which
-                             lands in Phase 4. Emitted as an empty list.
+    frequently_paired_with — undirected. Derived from `.crew/usage.log`: any
+                             pair of archetype slugs that co-occur in the
+                             same usage entry (or same monthly aggregate)
+                             at least PAIR_THRESHOLD times. Missing log =
+                             empty list, no error.
 
 Usage:
     python3 scripts/build-graph.py
@@ -35,7 +38,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from validate import REPO_ROOT, PERSONAS_DIR, split_frontmatter  # noqa: E402
 
 GRAPH_PATH = REPO_ROOT / "graph.json"
+USAGE_LOG_PATH = REPO_ROOT / ".crew" / "usage.log"
 NOT_CONFUSED_HEADING = "## Not to be confused with"
+PAIR_THRESHOLD = 2  # low threshold early; tune once the log has real volume
 
 # - **Display Name** — reason text (em-dash or double-hyphen tolerated)
 BULLET_RE = re.compile(
@@ -150,6 +155,17 @@ def build_graph() -> tuple[dict, list[str]]:
             })
     shares_exemplar.sort(key=lambda e: tuple(e["archetypes"]))
 
+    known_slugs = {a["slug"] for a in archetypes}
+    pair_counts = count_pair_cooccurrences(known_slugs)
+    frequently_paired_with: list[dict] = []
+    for (a, b), count in sorted(pair_counts.items()):
+        if count < PAIR_THRESHOLD:
+            continue
+        frequently_paired_with.append({
+            "archetypes": [a, b],
+            "count": count,
+        })
+
     archetypes.sort(key=lambda a: a["slug"])
     graph = {
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
@@ -157,10 +173,51 @@ def build_graph() -> tuple[dict, list[str]]:
         "edges": {
             "contrasts": contrasts,
             "shares_exemplar": shares_exemplar,
-            "frequently_paired_with": [],
+            "frequently_paired_with": frequently_paired_with,
         },
     }
     return graph, warnings
+
+
+def count_pair_cooccurrences(known_slugs: set[str]) -> dict[tuple[str, str], int]:
+    """Parse `.crew/usage.log` and count pair co-occurrences per entry.
+
+    Raw entries contribute +1 per pair of slugs present. Aggregate entries
+    (produced by `scripts/usage-log.py compact`) carry a `pairs` map with
+    pre-counted pairs; those counts are added verbatim. Pairs involving
+    slugs not in the current catalog are dropped silently (archetypes may
+    have been renamed or removed).
+    """
+    pairs: dict[tuple[str, str], int] = {}
+    if not USAGE_LOG_PATH.exists():
+        return pairs
+    with USAGE_LOG_PATH.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if entry.get("command") == "aggregate":
+                for pair_str, n in (entry.get("pairs") or {}).items():
+                    if "|" not in pair_str:
+                        continue
+                    a, b = pair_str.split("|", 1)
+                    if a not in known_slugs or b not in known_slugs:
+                        continue
+                    key = tuple(sorted((a, b)))
+                    pairs[key] = pairs.get(key, 0) + int(n)
+                continue
+            slugs = [
+                s for s in (entry.get("archetypes") or [])
+                if isinstance(s, str) and s in known_slugs
+            ]
+            for a, b in combinations(sorted(set(slugs)), 2):
+                key = (a, b)
+                pairs[key] = pairs.get(key, 0) + 1
+    return pairs
 
 
 def render(graph: dict) -> str:
@@ -200,7 +257,8 @@ def main(argv: list[str]) -> int:
             return 1
         print(f"check ok — {len(graph['nodes'])} node(s), "
               f"{len(graph['edges']['contrasts'])} contrast edge(s), "
-              f"{len(graph['edges']['shares_exemplar'])} shared-exemplar edge(s)")
+              f"{len(graph['edges']['shares_exemplar'])} shared-exemplar edge(s), "
+              f"{len(graph['edges']['frequently_paired_with'])} pair edge(s)")
         return 0
 
     existing_shape = None
@@ -218,7 +276,8 @@ def main(argv: list[str]) -> int:
     print(
         f"built graph — {len(graph['nodes'])} node(s), "
         f"{len(graph['edges']['contrasts'])} contrast edge(s), "
-        f"{len(graph['edges']['shares_exemplar'])} shared-exemplar edge(s) — "
+        f"{len(graph['edges']['shares_exemplar'])} shared-exemplar edge(s), "
+        f"{len(graph['edges']['frequently_paired_with'])} pair edge(s) — "
         f"graph.json {'updated' if changed or not existing_shape else 'unchanged'}"
     )
     return 0

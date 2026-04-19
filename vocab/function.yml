@@ -12,6 +12,12 @@
 #
 # SKOS relationships (Phase 2, P2.3): populated within this facet only.
 # `broader`/`narrower` are symmetric — if A lists B as narrower, B must list A as broader.
+#
+# Cross-facet relationships (Phase 4, P4.5):
+#   cross_facet_related  — map keyed by target facet (expertise / approach),
+#                          values = list of tag slugs in that facet. Derived
+#                          from observed co-occurrence in the catalog at
+#                          threshold ≥ 2 archetypes. Must be symmetric.
 
 tags:
   critique:
@@ -20,6 +26,9 @@ tags:
     broader: []
     narrower: [stress-test, falsify, methodology-review]
     related: []
+    cross_facet_related:
+      expertise: [behavioral-economics, epistemology, information-architecture, product-design, quantitative-finance, statistics, user-research]
+      approach: [contrarian, cycle-aware, empirical, pragmatic, rigorous, skeptical, taxonomic]
 
   stress-test:
     label: Stress Test
@@ -27,6 +36,9 @@ tags:
     broader: [critique]
     narrower: []
     related: [falsify]
+    cross_facet_related:
+      expertise: [product-design, quantitative-finance, statistics]
+      approach: [contrarian, empirical, pragmatic, rigorous, skeptical]
 
   falsify:
     label: Falsify
@@ -34,6 +46,9 @@ tags:
     broader: [critique]
     narrower: []
     related: [stress-test, methodology-review]
+    cross_facet_related:
+      expertise: [statistics]
+      approach: [empirical, rigorous, skeptical]
 
   synthesize:
     label: Synthesize
@@ -41,6 +56,7 @@ tags:
     broader: []
     narrower: []
     related: [reframe, simplify]
+    cross_facet_related: {}
 
   teach:
     label: Teach
@@ -48,6 +64,7 @@ tags:
     broader: []
     narrower: []
     related: [reframe]
+    cross_facet_related: {}
 
   reframe:
     label: Reframe
@@ -55,6 +72,9 @@ tags:
     broader: []
     narrower: []
     related: [synthesize, teach, discover]
+    cross_facet_related:
+      expertise: [behavioral-economics, product-design, quantitative-finance, user-research]
+      approach: [cycle-aware, empirical]
 
   simplify:
     label: Simplify
@@ -62,6 +82,7 @@ tags:
     broader: []
     narrower: []
     related: [synthesize, reframe]
+    cross_facet_related: {}
 
   discover:
     label: Discover
@@ -69,6 +90,9 @@ tags:
     broader: []
     narrower: []
     related: [reframe]
+    cross_facet_related:
+      expertise: [product-design, user-research]
+      approach: [empirical]
 
   methodology-review:
     label: Methodology Review
@@ -76,3 +100,5 @@ tags:
     broader: [critique]
     narrower: []
     related: [falsify]
+    cross_facet_related:
+      approach: [rigorous]

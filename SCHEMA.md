@@ -44,7 +44,14 @@ The full controlled vocabulary lives in three source files, one per facet:
 - [`vocab/function.yml`](vocab/function.yml) — what the archetype does (critique, stress-test, etc.)
 - [`vocab/approach.yml`](vocab/approach.yml) — how the archetype shows up (rigorous, contrarian, etc.)
 
-Each file lists the allowed tags with a definition for each. The validator (`scripts/validate.py`) reads these files as the source of truth. These tags help `/crew` match archetypes to problems.
+Each tag entry in these files carries:
+
+- `label` — preferred human-readable form
+- `definition` — one sentence: what falls inside this tag
+- `broader` / `narrower` / `related` — SKOS relationships **within the same facet**; `broader`/`narrower` are enforced symmetric by the validator
+- `cross_facet_related` — map keyed by target facet (e.g. `function:` or `approach:` under an expertise tag), values = lists of tag slugs in that target facet. Populated from observed catalog co-occurrence at threshold ≥ 2. Enforced symmetric by the validator. Read by `/crew-related` and `/crew-browse` to surface cross-facet suggestions.
+
+The validator (`scripts/validate.py`) reads these files as the source of truth. These tags help `/crew` match archetypes to problems.
 
 Adding a new tag is a deliberate act — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the proposal flow. Reuse an existing tag whenever it fits; the vocab is intentionally small and stays small.
 

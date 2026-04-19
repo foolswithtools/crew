@@ -77,7 +77,7 @@ Then proceed.
 
 #### Mandatory pre-flight before `Write` (state each in your reply)
 
-You must do all four of these, **in your reply to the user**, before calling `Write`. These are not silent checks — a thoughtful contributor would write each one out, and so should you. If any check fails, fix the draft before saving.
+You must do all six of these, **in your reply to the user**, before calling `Write`. These are not silent checks — a thoughtful contributor would write each one out, and so should you. If any check fails, fix the draft before saving.
 
 **1. State the coherence argument in prose.**
 Write a paragraph (this is the draft's "Exemplars & coherence" section, but argue it explicitly here too) explaining: who the exemplars are, where they tactically differ, and the load-bearing ~80% they share. If you cannot write this honestly without hand-waving, the exemplar set is incoherent — split it and ask the user which side to draft.
@@ -124,9 +124,52 @@ The Jaccard/tag check above is a cheap first pass; it won't catch paraphrases of
       - `cosine < 0.70` (`distinct`) → state "below semantic threshold, proceeding."
    5. If the helper prints `"embeddings_enabled": false` (missing deps or empty index), say so in the reply and proceed on the Jaccard/tag check alone — don't block on a missing derived artifact.
 
+**6. Invoke The Librarian for peer review.**
+Once checks 1–5 have passed (or their overrides are justified), launch a single subagent that plays **The Librarian** — a meta-archetype whose job is to critique new archetype drafts before save.
+
+1. Check that `personas/the-librarian.md` exists. If missing, skip this step and say so in the reply (bootstrap: the catalog's first archetype pre-dates the Librarian; a follow-on draft should add it). Proceed to Save.
+2. Otherwise, use the Agent tool with `subagent_type: general-purpose`, `description: The Librarian reviews <draft-slug>`. Assemble the prompt from:
+   - The full contents of `personas/the-librarian.md` (paste verbatim as the persona definition).
+   - The full proposed draft (the body you wrote to `.crew/draft-check.md` in step 5).
+   - The top-5 `top_matches` JSON from `scripts/semantic-duplicate-check.py` (paste as-is so the Librarian can read the neighbors' similarity scores).
+   - The three vocab files (`vocab/expertise.yml`, `vocab/function.yml`, `vocab/approach.yml`) pasted verbatim.
+3. Instruct the subagent to produce (under 400 words):
+   - **Verdict in one word:** PROMOTE / EDIT / REJECT
+   - **Per-axis notes** (one short paragraph each): coherence · uniqueness · vocab · prose
+   - **One sharp question** the drafter should answer before save
+4. Present the Librarian's verdict under a `### Librarian review` heading in your reply, verbatim.
+5. **Handling the verdict:**
+   - `PROMOTE` → proceed to Save.
+   - `EDIT` → do NOT save yet. Surface the specific edits the Librarian named and ask the user whether to apply them (and then save) or to save as-is over the Librarian's objections. Wait for explicit user direction.
+   - `REJECT` → do NOT save. Present the Librarian's reasoning and the named overlap/incoherence. Ask the user whether to revise the draft (and re-run the checks), merge with the Librarian's named existing archetype, or override the veto with explicit justification.
+
+The Librarian's voice is a gate, not an oracle. The user can always override — but they must do so explicitly, in writing, after seeing the verdict.
+
 #### Save
 
-Only after all four checks pass: use `Write` to save to `personas/<kebab-case-slug>.md`. Then confirm to the user: "Saved to `personas/<slug>.md` (`reviewed: false`). Run `python3 scripts/validate.py personas/<slug>.md` to confirm format. Crew is complete. Ready for `/crew-review`?"
+Only after all six checks pass (or any EDIT verdict from the Librarian has been explicitly resolved with the user): use `Write` to save to `personas/<kebab-case-slug>.md`. Then confirm to the user: "Saved to `personas/<slug>.md` (`reviewed: false`). Run `python3 scripts/validate.py personas/<slug>.md` to confirm format. Crew is complete. Ready for `/crew-review`?"
+
+#### Log the draft
+
+After `Write` succeeds, append one JSONL entry to `.crew/usage.log` capturing what was drafted and the nearest neighbors from the duplicate check. Run via `Bash`:
+
+```
+python3 scripts/usage-log.py append '{"command":"crew-draft","archetypes":["<top-5 semantic neighbor slugs>"],"saved_slug":"<new-slug>","problem_hash":null}'
+```
+
+Use the semantic-duplicate-check top-5 slugs as `archetypes` (dropping any that don't resolve). This populates `frequently_paired_with` edges with "what got drafted next to what" signal. Failure of the append step is non-blocking — mention it in the reply but don't re-save the archetype.
+
+### 6. Log the seek-it output
+
+At the end of the seek-it flow (after the "Confirm or redirect" block is in your reply), append one JSONL entry to `.crew/usage.log` capturing the proposed crew. Run via `Bash`:
+
+```
+python3 scripts/usage-log.py append '{"command":"crew-seek","archetypes":["<slug1>","<slug2>","<slug3>"],"problem_hash":null}'
+```
+
+`archetypes` is the list of archetype slugs you actually surfaced in the numbered crew (drop any "missing archetype" placeholder entries; include only resolved slugs). If the user later redirects the crew in a follow-up turn, that redirect produces its own `/crew` call and its own log entry — don't retroactively amend the earlier one.
+
+This step is last. Do not mention the log append to the user unless it fails; it's bookkeeping.
 
 ## Rules
 

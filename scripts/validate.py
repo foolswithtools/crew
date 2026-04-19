@@ -194,9 +194,12 @@ def check_vocab_relationships(vocab: dict[str, dict]) -> list[Finding]:
     SKOS-symmetry check across each facet file:
       - every value in broader/narrower/related must reference a tag in the same facet
       - if A.narrower contains B, then B.broader must contain A (and vice versa)
+      - cross_facet_related (P4.5) must reference a known facet + a tag in that facet,
+        and must be symmetric across facets (A→B implies B→A)
     Findings are WARNINGs (vocab governance, not a file-format failure).
     """
     findings: list[Finding] = []
+    known_facets = set(vocab.keys())
     for facet, tags in vocab.items():
         path = VOCAB_DIR / f"{facet}.yml"
         for tag, meta in tags.items():
@@ -230,6 +233,37 @@ def check_vocab_relationships(vocab: dict[str, dict]) -> list[Finding]:
                     if tag not in parent_narrower:
                         findings.append(Finding("WARNING", path, "vocab-rel-asymmetric",
                                                 f"`{tag}.broader` includes `{parent}`, but `{parent}.narrower` does not include `{tag}` in vocab/{facet}.yml"))
+
+            cfr = meta.get("cross_facet_related")
+            if cfr is not None and not isinstance(cfr, dict):
+                findings.append(Finding("WARNING", path, "vocab-cross-facet-type",
+                                        f"`{tag}.cross_facet_related` must be a mapping of target-facet -> tag list in vocab/{facet}.yml"))
+                continue
+            if not isinstance(cfr, dict):
+                continue
+            for target_facet, target_tags in cfr.items():
+                if target_facet == facet:
+                    findings.append(Finding("WARNING", path, "vocab-cross-facet-selfref",
+                                            f"`{tag}.cross_facet_related` targets its own facet `{target_facet}` — use `related` for within-facet links in vocab/{facet}.yml"))
+                    continue
+                if target_facet not in known_facets:
+                    findings.append(Finding("WARNING", path, "vocab-cross-facet-unknown-facet",
+                                            f"`{tag}.cross_facet_related` targets unknown facet `{target_facet}` in vocab/{facet}.yml"))
+                    continue
+                if not isinstance(target_tags, list):
+                    findings.append(Finding("WARNING", path, "vocab-cross-facet-type",
+                                            f"`{tag}.cross_facet_related.{target_facet}` must be a list in vocab/{facet}.yml"))
+                    continue
+                for ref in target_tags:
+                    if ref not in vocab[target_facet]:
+                        findings.append(Finding("WARNING", path, "vocab-cross-facet-unknown-tag",
+                                                f"`{tag}.cross_facet_related.{target_facet}` references `{ref}` which is not a tag in vocab/{target_facet}.yml"))
+                        continue
+                    reverse = vocab[target_facet][ref].get("cross_facet_related") if isinstance(vocab[target_facet][ref], dict) else None
+                    reverse_list = (reverse or {}).get(facet) or [] if isinstance(reverse, dict) else []
+                    if tag not in reverse_list:
+                        findings.append(Finding("WARNING", path, "vocab-cross-facet-asymmetric",
+                                                f"`{tag}.cross_facet_related.{target_facet}` includes `{ref}`, but `{ref}.cross_facet_related.{facet}` does not include `{tag}` in vocab/{target_facet}.yml"))
     return findings
 
 

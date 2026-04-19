@@ -99,6 +99,20 @@ def main() -> int:
         if graph.returncode != 0:
             sys.stderr.write(f"build-graph warning for {rel}:\n{graph.stdout}{graph.stderr}")
 
+    # Signals depend only on .crew/usage.log + git history, but INDEX.md's
+    # Trending / New-this-month sections read the signals file — regenerate
+    # it so INDEX.md stays fresh. Cheap and non-blocking.
+    usage_log_script = REPO_ROOT / "scripts" / "usage-log.py"
+    if usage_log_script.exists():
+        sig = run([sys.executable, str(usage_log_script), "signals"])
+        if sig.returncode != 0:
+            sys.stderr.write(f"usage-log signals warning for {rel}:\n{sig.stdout}{sig.stderr}")
+        else:
+            # Signals may have changed INDEX.md's derived sections; rebuild.
+            rebuild = run([sys.executable, str(REPO_ROOT / "scripts" / "build-index.py")])
+            if rebuild.returncode != 0:
+                sys.stderr.write(f"post-signals build-index warning for {rel}:\n{rebuild.stdout}{rebuild.stderr}")
+
     sys.stderr.write(f"post-write-hook: {rel} validated, catalog rebuilt\n")
     return 0
 

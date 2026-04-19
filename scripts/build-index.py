@@ -31,6 +31,7 @@ from validate import REPO_ROOT, PERSONAS_DIR, VOCAB_DIR, split_frontmatter  # no
 
 CATALOG_PATH = REPO_ROOT / "catalog.json"
 INDEX_PATH = REPO_ROOT / "INDEX.md"
+SIGNALS_PATH = REPO_ROOT / ".crew" / "signals.json"
 
 FACETS = ("expertise", "function", "approach")
 FACET_HEADINGS = {
@@ -83,6 +84,16 @@ def render_catalog(archetypes: list[dict]) -> str:
     return json.dumps(archetypes, indent=2, sort_keys=True) + "\n"
 
 
+def load_signals() -> dict:
+    """Read `.crew/signals.json` if present; return {} on any failure."""
+    if not SIGNALS_PATH.exists():
+        return {}
+    try:
+        return json.loads(SIGNALS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
 def render_index(archetypes: list[dict]) -> str:
     by_name = {a["name"]: a for a in archetypes}
     lines: list[str] = []
@@ -92,6 +103,29 @@ def render_index(archetypes: list[dict]) -> str:
     lines.append("")
     lines.append(f"**{len(archetypes)} archetype(s)** across {len(FACETS)} facets.")
     lines.append("")
+
+    signals = load_signals()
+    trending = [s for s in (signals.get("trending") or []) if s in by_name]
+    new_this_month = [s for s in (signals.get("new_this_month") or []) if s in by_name]
+    by_slug_signals = signals.get("by_slug") or {}
+    if trending or new_this_month:
+        lines.append("## Signals")
+        lines.append("")
+        lines.append("_Derived from `.crew/usage.log` by `scripts/usage-log.py signals`. Missing = no invocations recorded yet._")
+        lines.append("")
+        if trending:
+            lines.append("**Trending (30-day invocation count, top 5):**")
+            for slug in trending:
+                a = by_name[slug]
+                count = (by_slug_signals.get(slug) or {}).get("invocations", "?")
+                lines.append(f"- [{a['display_name']}]({a['path']}) — {count} invocation(s)")
+            lines.append("")
+        if new_this_month:
+            lines.append("**New this month:**")
+            for slug in sorted(new_this_month):
+                a = by_name[slug]
+                lines.append(f"- [{a['display_name']}]({a['path']})")
+            lines.append("")
 
     for facet in FACETS:
         lines.append(f"## {FACET_HEADINGS[facet]}")

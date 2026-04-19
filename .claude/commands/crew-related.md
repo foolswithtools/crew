@@ -50,15 +50,21 @@ The JSON's `ranked` list is already sorted by cosine similarity and excludes the
 
 Present each match as `- **<display_name>** — cosine {0.xx}`.
 
-#### 2d. Vocab neighbors (SKOS)
+#### 2d. Vocab neighbors (SKOS — within- and cross-facet)
 
-Read `vocab/expertise.yml`, `vocab/function.yml`, `vocab/approach.yml`. For each facet:
+Read `vocab/expertise.yml`, `vocab/function.yml`, `vocab/approach.yml`. Walk two kinds of relationships:
 
-1. For each tag in the target's facet list, collect the tag's `broader`, `narrower`, and `related` lists from the vocab.
+**Within-facet (broader / narrower / related):**
+1. For each tag in the target's facet list, collect the tag's `broader`, `narrower`, and `related` lists from the vocab (same-facet).
 2. Find other archetypes in `catalog.json` whose facet list contains any of those related tags.
 3. Record which SKOS relationship (broader / narrower / related) and which tag connected them.
 
-Present as: `- **<display_name>** — via {facet}:{target_tag} → {rel} {neighbor_tag}`. Cap the section at 5 entries, preferring narrower/broader over related.
+**Cross-facet (`cross_facet_related`):**
+1. For each tag in the target's facet list, read its `cross_facet_related` map. Keys are target facets; values are lists of tag slugs in that facet.
+2. For each cross-facet tag found, find archetypes in `catalog.json` whose relevant facet list contains it.
+3. Record the provenance as `cross_facet {neighbor_facet}:{neighbor_tag}` (the neighbor is in a *different* facet from the target's originating tag).
+
+Present as: `- **<display_name>** — via {facet}:{target_tag} → {rel} {neighbor_tag}` for within-facet, or `- **<display_name>** — via {facet}:{target_tag} → cross_facet {neighbor_facet}:{neighbor_tag}` for cross-facet. Cap the section at 5 entries total, preferring in this priority order: narrower > broader > related > cross_facet.
 
 ### 3. Produce the reply
 
@@ -83,8 +89,9 @@ Facets: expertise {…} · function {…} · approach {…}
 - **{other_display_name}** — cosine {0.xx}
 - …
 
-### Vocab neighbors (SKOS)
+### Vocab neighbors (SKOS — within- and cross-facet)
 - **{other_display_name}** — via expertise:{tag} → narrower {other_tag}
+- **{other_display_name}** — via expertise:{tag} → cross_facet function:{other_tag}
 - …
 
 **Next:** `/crew-browse {inferred useful filter based on target's tags}` or `/crew "{one-line sketch problem this archetype would pressure-test}"`.

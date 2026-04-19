@@ -177,25 +177,7 @@ Layer 1 is the source of truth. Layer 2 is rebuilt from Layer 1. Layer 3 reads f
 
 ## Phased build order
 
-Each phase is small enough to complete in one session.
-
-### Phase 4 — Mature catalog (5,000+)
-
-**Goal:** self-maintaining; coverage-aware; authoritative.
-
-- [ ] **P4.1 — Usage-signal-driven deadwood detection**
-  - Archetypes never invoked in N months → flag for archive
-  - Archetypes consistently underperforming (user flagged as bad fit in crews) → flag for review
-- [ ] **P4.2 — Coverage audit command**
-  - `/crew-audit <domain>` runs a Round-1-style critique *on the catalog itself* for a domain: "what major schools of thought are missing?"
-- [ ] **P4.3 — The Librarian archetype (recursive)**
-  - A meta-archetype whose job is to review new archetype drafts
-  - Auto-invoked by `/crew` during drafting: the drafted archetype is passed to the Librarian, who runs a coherence / overlap / vocabulary critique before save
-  - The Wrecking Crew polices its own roster
-- [ ] **P4.4 — Trending / freshness signals**
-  - Popularity by invocation count; recency by last-invoked; new-this-month highlights
-- [ ] **P4.5 — SKOS-vocabulary web (not just per-facet)**
-  - Relationships across facets (e.g., `expertise:machine-learning` implies `function:methodology-review` is often relevant)
+All phases (1–4) are now complete. See the **Done** section at the bottom of this file for the completed checklist and outcomes.
 
 ---
 
@@ -220,9 +202,9 @@ Nothing from Phase 1 / 2 / 3 / 4 exists yet. No validator, no vocab files, no bu
 
 Pick up from here:
 
-1. **Fill the catalog** to exercise the Phase 3 tooling. `/crew` drafting now runs Jaccard/tag + semantic duplicate checks; the post-write hook rebuilds `catalog.json`, `INDEX.md`, `embeddings.sqlite`, and `graph.json` on every persona write; `/crew-browse` and `/crew-related` are available for navigation; `/crew-review-archetype` promotes `reviewed: false` → `true` after peer critique. The embedding ranker only meaningfully pre-filters once the catalog passes ~20 archetypes — until then, `/crew` still reads everything.
-2. **Revisit the SKOS relationships periodically.** As new tags get added, keep the `broader`/`narrower`/`related` mappings current; the validator will warn on asymmetry but won't fail.
-3. **Phase 4 trigger is empirical, not time-based.** Don't start P4 (usage signals, coverage audit, Librarian meta-archetype, cross-facet SKOS) until either the catalog clears ~5,000 entries or `.crew/usage.log` has accumulated enough invocations to drive deadwood + trending signals.
+1. **Fill the catalog** to exercise the Phase 3 + Phase 4 tooling. `/crew` drafting runs Jaccard/tag + semantic duplicate checks *and* the Librarian peer-review gate; the post-write hook rebuilds `catalog.json`, `INDEX.md`, `embeddings.sqlite`, `graph.json`, and `.crew/signals.json` on every persona write; `/crew-browse` and `/crew-related` are available for navigation (now with cross-facet SKOS suggestions); `/crew-review-archetype` promotes `reviewed: false` → `true` after peer critique; `/crew-audit <domain>` surfaces coverage gaps. The embedding ranker only meaningfully pre-filters once the catalog passes ~20 archetypes — until then, `/crew` still reads everything.
+2. **Revisit the SKOS relationships (within- and cross-facet) periodically.** As new tags and archetypes land, `broader`/`narrower`/`related` and `cross_facet_related` drift away from observed co-occurrence. Re-derive `cross_facet_related` from `catalog.json` at threshold ≥ 2 when the catalog shape changes materially. Validator warns on asymmetry but doesn't fail.
+3. **Let `.crew/usage.log` accumulate signal.** Every `/crew`, `/crew-review`, `/crew-review-archetype`, and `/crew-audit` invocation logs one line. After a few weeks of real use, `deadwood-report.py` surfaces genuinely unused archetypes, `signals.json` drives Trending, and `frequently_paired_with` edges surface real complements. Compact (`python3 scripts/usage-log.py compact`) opportunistically.
 
 ---
 
@@ -310,3 +292,33 @@ Pick up from here:
 - Layer 2 (build artifacts, gitignored): `catalog.json`, `INDEX.md`, `embeddings.sqlite` (new), `graph.json` (new)
 - Layer 3 (tooling): `scripts/validate.py`, `scripts/build-index.py`, `scripts/post-write-hook.py` (extended to run embeddings + graph and re-exec into venv), `scripts/build-embeddings.py` (new), `scripts/semantic-duplicate-check.py` (new), `scripts/embed-query.py` (new), `scripts/build-graph.py` (new), `.claude/settings.json`, `.claude/commands/{crew (extended),crew-review,crew-review-archetype,crew-browse (new),crew-related (new)}.md`
 - Dev env: repo-local `venv/` (gitignored) with PyYAML + sentence-transformers + sqlite-vec + numpy; hook hops into it automatically when present
+
+### Phase 4 — Mature catalog scaffolding (at 8 archetypes, scaffolding for 5,000+) — completed 2026-04-18
+
+**Outcome:** the catalog now generates signals about itself, audits its own coverage on demand, peer-reviews its own additions at draft time, and carries cross-facet SKOS relationships that unlock richer navigation. Same pattern as Phase 3: land the scaffolding before the scale strains it. `.crew/usage.log` is the foundation — every `/crew` / `/crew-review` / `/crew-review-archetype` / `/crew-audit` invocation appends a JSONL line; raw entries compact into monthly aggregates past 90 days. Derived artifacts (`.crew/signals.json`, `graph.json` `frequently_paired_with` edges, `INDEX.md` Trending section) fall out automatically. The Librarian closes the draft-time peer-review loop as a 9th archetype. `/crew-audit <domain>` runs the catalog's own critics against its coverage. Cross-facet SKOS (empirically derived from catalog co-occurrence at threshold ≥ 2) flows into `/crew-related` and `/crew-browse`. Catalog: 8 → 9 archetypes; graph edges: 17 → 20 contrasts.
+
+- [x] **P4.1 — Usage-signal-driven deadwood detection**
+  - Archetypes never invoked in N months → flag for archive
+  - Archetypes consistently underperforming (user flagged as bad fit in crews) → flag for review
+  - Built `scripts/usage-log.py` (append / compact / signals subcommands) and `scripts/deadwood-report.py`. `.crew/usage.log` is JSONL; raw entries compact into monthly aggregates past 90 days (idempotent — second compact is a no-op). Wired logging into `.claude/commands/crew.md` (seek-it step 6, draft-it post-Write), `.claude/commands/crew-review.md` (step 9, after synthesis), `.claude/commands/crew-review-archetype.md` (step 7, after synthesis). Extended `scripts/build-graph.py` to read `.crew/usage.log` and emit `edges.frequently_paired_with` at `count ≥ 2` threshold — validated with 4 synthetic pair edges surviving compaction via the monthly-aggregate `pairs` map. `deadwood-report.py --months 3` correctly surfaces both never-invoked (1) and stale (1) candidates from the test log.
+- [x] **P4.4 — Trending / freshness signals**
+  - Popularity by invocation count; recency by last-invoked; new-this-month highlights
+  - `scripts/usage-log.py signals` emits `.crew/signals.json` (by_slug counts + last_invoked + first_seen, trending top 5 in last 30 days, new_this_month via git first-add commit). `scripts/build-index.py` reads the signals file and injects a "Signals" block at the top of `INDEX.md` with Trending + New this month subsections. `scripts/post-write-hook.py` runs `usage-log.py signals` after `build-graph.py` and re-runs `build-index.py` so INDEX.md stays in sync. `.claude/commands/crew-browse.md` now surfaces a one-line trending hint when called with no args. Idempotency preserved — `build-index.py --check` clean after the new section lands.
+- [x] **P4.3 — The Librarian archetype (recursive)**
+  - A meta-archetype whose job is to review new archetype drafts
+  - Auto-invoked by `/crew` during drafting: the drafted archetype is passed to the Librarian, who runs a coherence / overlap / vocabulary critique before save
+  - The Wrecking Crew polices its own roster
+  - Wrote `personas/the-librarian.md` by hand (Ranganathan / Svenonius / Gruber — three whose writings converge on "controlled vocabularies are engineered, not grown"). Validates clean (0 errors, 0 warnings); post-write hook regenerated catalog + embeddings + graph (20 contrast edges; the Librarian picked up 3 new contrasts against Information Architect, Data-Honesty Skeptic, Contrarian Simplicity Skeptic). Wired the Librarian as pre-flight check #6 in `.claude/commands/crew.md` draft-it path: subagent is launched with full persona + draft + top-5 semantic neighbors + all three vocab files, produces PROMOTE/EDIT/REJECT + per-axis notes. PROMOTE proceeds to Save; EDIT and REJECT require explicit user direction before save. Graceful skip if `personas/the-librarian.md` is missing (bootstrap path).
+- [x] **P4.2 — Coverage audit command**
+  - `/crew-audit <domain>` runs a Round-1-style critique *on the catalog itself* for a domain: "what major schools of thought are missing?"
+  - Built `.claude/commands/crew-audit.md`. Candidate set = union of (a) `embed-query.py --top 30` with cosine ≥ 0.30 and (b) tag/display-name keyword overlap against the domain words. Launches 3 parallel meta-critics (domain expert / MECE disciplinarian / contrarian), each seeing the full candidate bodies. Orchestrator synthesizes a coverage map (schools named → covered/partial/missing) + 1–3 concrete next-archetype recommendations with proposed name, exemplars, and dimensions. Empty-candidate case handled gracefully. Logs a `crew-audit` entry to `.crew/usage.log`. Command registered in the skills list; pre-filter validated against `quantitative finance` (3 finance archetypes at cosines 0.29–0.41; tag-keyword pass in 2b backstops the semantic threshold for terms like `regime-aware-macro-thinker`).
+- [x] **P4.5 — SKOS-vocabulary web (not just per-facet)**
+  - Relationships across facets (e.g., `expertise:machine-learning` implies `function:methodology-review` is often relevant)
+  - Added `cross_facet_related:` field to every tag in `vocab/expertise.yml`, `vocab/function.yml`, `vocab/approach.yml`. Values keyed by target facet; populated empirically from catalog co-occurrence at threshold ≥ 2 (computed from the current 9-archetype catalog). Extended `scripts/validate.py:check_vocab_relationships()` with same-facet self-ref check, unknown-facet / unknown-tag checks, and cross-facet symmetry enforcement (asymmetry = WARNING, matching the within-facet convention). Verified asymmetry detection by injecting a one-sided ref — validator surfaced it correctly. Updated `.claude/commands/crew-related.md` to walk cross-facet neighbors alongside within-facet (cap at 5, priority narrower > broader > related > cross_facet). Updated `.claude/commands/crew-browse.md` filtered-output mode to add "Related in other facets" section with ≤ 3 refinement suggestions. Documented the `cross_facet_related` field in `SCHEMA.md`. Final pipeline check: validator clean, build-index idempotent, build-graph idempotent, build-embeddings idempotent.
+
+**Recommended order followed:** P4.1 (usage log foundation) → P4.4 (trending/freshness piggybacks on the log) → P4.3 (Librarian draft-time review) → P4.2 (coverage audit) → P4.5 (cross-facet SKOS). Usage log landed first because it's the foundation P4.4 and `graph.json`'s `frequently_paired_with` edges both depend on.
+
+**Repo shape after Phase 4:**
+- Layer 1 (source): `personas/*.md` (9 archetypes including The Librarian), `vocab/*.yml` (now with `cross_facet_related` on every tag), `SCHEMA.md` (documents cross-facet SKOS), `TEMPLATE.md`, `CONTRIBUTING.md`, `requirements.txt`
+- Layer 2 (build artifacts, gitignored): `catalog.json`, `INDEX.md` (now with Signals section), `embeddings.sqlite`, `graph.json` (now populates `frequently_paired_with`), `.crew/usage.log` (new, JSONL), `.crew/signals.json` (new)
+- Layer 3 (tooling): all prior scripts, plus `scripts/usage-log.py` (new), `scripts/deadwood-report.py` (new). `.claude/commands/crew-audit.md` (new). `.claude/commands/crew.md` (extended with Librarian step + usage logging). `.claude/commands/crew-review.md`, `crew-review-archetype.md` (extended with usage logging). `.claude/commands/crew-related.md`, `crew-browse.md` (extended with cross-facet SKOS). `scripts/validate.py` (extended with cross-facet checks). `scripts/build-index.py` (extended with Signals section). `scripts/build-graph.py` (extended to read usage log). `scripts/post-write-hook.py` (extended to run `usage-log.py signals` + rebuild index).

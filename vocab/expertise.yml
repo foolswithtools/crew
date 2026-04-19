@@ -12,8 +12,15 @@
 #   related     — adjacent tags worth a cross-reference (SKOS)
 #
 # SKOS relationships (Phase 2, P2.3): populated within this facet.
-# Cross-facet relationships are out of scope until Phase 4 (P4.5).
 # `broader`/`narrower` are symmetric — if A lists B as narrower, B must list A as broader.
+#
+# Cross-facet relationships (Phase 4, P4.5):
+#   cross_facet_related  — map keyed by target facet (function / approach),
+#                          values = list of tag slugs in that facet. Derived
+#                          from observed co-occurrence in the catalog at
+#                          threshold ≥ 2 archetypes. Must be symmetric: if
+#                          expertise:X lists function:Y, then function:Y must
+#                          list expertise:X. Asymmetry is a WARNING.
 
 tags:
   quantitative-finance:
@@ -22,6 +29,9 @@ tags:
     broader: []
     narrower: []
     related: [machine-learning, statistics, time-series, forecasting, technical-analysis, macro-economics]
+    cross_facet_related:
+      function: [critique, reframe, stress-test]
+      approach: [cycle-aware, empirical]
 
   machine-learning:
     label: Machine Learning
@@ -29,6 +39,7 @@ tags:
     broader: []
     narrower: []
     related: [statistics, forecasting, time-series, quantitative-finance]
+    cross_facet_related: {}
 
   statistics:
     label: Statistics
@@ -36,6 +47,9 @@ tags:
     broader: []
     narrower: [forecasting, time-series]
     related: [machine-learning, epistemology, quantitative-finance]
+    cross_facet_related:
+      function: [critique, falsify, stress-test]
+      approach: [empirical, rigorous, skeptical]
 
   macro-economics:
     label: Macro Economics
@@ -43,6 +57,7 @@ tags:
     broader: []
     narrower: []
     related: [behavioral-economics, quantitative-finance, forecasting]
+    cross_facet_related: {}
 
   technical-analysis:
     label: Technical Analysis
@@ -50,6 +65,7 @@ tags:
     broader: []
     narrower: []
     related: [quantitative-finance, behavioral-economics]
+    cross_facet_related: {}
 
   product-design:
     label: Product Design
@@ -57,6 +73,9 @@ tags:
     broader: []
     narrower: []
     related: [user-research, information-architecture, behavioral-economics]
+    cross_facet_related:
+      function: [critique, discover, reframe, stress-test]
+      approach: [empirical, pragmatic]
 
   user-research:
     label: User Research
@@ -64,6 +83,9 @@ tags:
     broader: []
     narrower: []
     related: [product-design, information-architecture, behavioral-economics]
+    cross_facet_related:
+      function: [critique, discover, reframe]
+      approach: [empirical]
 
   software-architecture:
     label: Software Architecture
@@ -71,6 +93,7 @@ tags:
     broader: []
     narrower: []
     related: []
+    cross_facet_related: {}
 
   information-architecture:
     label: Information Architecture
@@ -78,6 +101,9 @@ tags:
     broader: []
     narrower: []
     related: [product-design, user-research]
+    cross_facet_related:
+      function: [critique]
+      approach: [rigorous, taxonomic]
 
   behavioral-economics:
     label: Behavioral Economics
@@ -85,6 +111,9 @@ tags:
     broader: []
     narrower: []
     related: [user-research, product-design, macro-economics, technical-analysis, epistemology]
+    cross_facet_related:
+      function: [critique, reframe]
+      approach: [cycle-aware, empirical]
 
   forecasting:
     label: Forecasting
@@ -92,6 +121,7 @@ tags:
     broader: [statistics]
     narrower: []
     related: [machine-learning, time-series, quantitative-finance, macro-economics, epistemology]
+    cross_facet_related: {}
 
   time-series:
     label: Time Series
@@ -99,6 +129,7 @@ tags:
     broader: [statistics]
     narrower: []
     related: [machine-learning, forecasting, quantitative-finance]
+    cross_facet_related: {}
 
   epistemology:
     label: Epistemology
@@ -106,3 +137,6 @@ tags:
     broader: []
     narrower: []
     related: [statistics, forecasting, behavioral-economics]
+    cross_facet_related:
+      function: [critique]
+      approach: [rigorous]

@@ -1,7 +1,7 @@
 ---
 description: Review an unreviewed archetype for coherence, uniqueness, vocab alignment, and prose quality. Launches 3 existing archetypes as parallel critics of the target archetype itself, then synthesizes a promote / edit / reject recommendation.
 argument-hint: <archetype-slug>  (e.g., classical-chartist)
-allowed-tools: Read, Glob, Edit
+allowed-tools: Read, Glob, Edit, Bash
 ---
 
 # /crew-review-archetype — Promote an archetype from `reviewed: false` to `reviewed: true`
@@ -120,6 +120,16 @@ Ask:
 If the user says yes, use `Edit` to change exactly the `reviewed: false` line to `reviewed: true` in `personas/<slug>.md`. Confirm the post-write hook will re-run the validator and rebuild the catalog automatically.
 
 If the recommendation is EDIT or REJECT, do NOT offer the flip. Summarize the required edits (for EDIT) or the merge/split path (for REJECT) and hand back to the user.
+
+### 7. Log the review
+
+After the synthesis is in your reply (regardless of PROMOTE / EDIT / REJECT), append one JSONL entry to `.crew/usage.log` capturing the target and the critic trio. Run via `Bash`:
+
+```
+python3 scripts/usage-log.py append '{"command":"crew-review-archetype","archetypes":["<target-slug>","<critic1-slug>","<critic2-slug>","<critic3-slug>"],"problem_hash":null}'
+```
+
+Put the target first; the three critic slugs follow. This step is bookkeeping; do not narrate it unless the command fails.
 
 ## Rules
 

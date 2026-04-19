@@ -30,10 +30,12 @@ If `catalog.json` is absent, tell the user to run `python3 scripts/build-index.p
 
 #### 3a. No filter (table of contents)
 
-If `$ARGUMENTS` is empty, group by facet and count archetypes per tag. Use this shape:
+If `$ARGUMENTS` is empty, group by facet and count archetypes per tag. Also load `.crew/signals.json` if it exists and surface a one-line "Recently invoked" hint above the facet listing. Use this shape:
 
 ```
 **Catalog — {N} archetypes across 3 facets.**
+
+_Trending (last 30 days): {display_name}, {display_name}, …_   (omit line if signals.json is absent or trending is empty)
 
 **Expertise** ({total unique tags used})
 - `<tag>` ({count}) — {display_name}, {display_name}, …
@@ -50,7 +52,7 @@ If `$ARGUMENTS` is empty, group by facet and count archetypes per tag. Use this 
 _Filter: `/crew-browse facet:tag` to narrow._
 ```
 
-Only list tags that have ≥ 1 archetype — don't enumerate empty vocab entries.
+Only list tags that have ≥ 1 archetype — don't enumerate empty vocab entries. To load trending: `Read .crew/signals.json` — the `trending` list contains slugs in rank order; resolve each to its display name via `catalog.json`. Skip the line gracefully if the signals file is missing, empty, or malformed.
 
 #### 3b. With a filter
 
@@ -72,6 +74,16 @@ If zero matches, say so and suggest a relaxation — drop the strictest facet an
 **Filter:** expertise ∈ {machine-learning}, approach ∈ {contrarian} — no matches.
 Dropping `approach:contrarian` would yield: {display_name} ({exemplars}).
 ```
+
+**Cross-facet suggestions.** After the matches list (or the zero-match note), read `vocab/*.yml` and surface cross-facet neighbors for each filter-facet tag the user requested. For every tag in the filter, look at its `cross_facet_related` map; list each `{target_facet}:{target_tag}` combination with at least one existing archetype, as:
+
+```
+**Related in other facets:** function:methodology-review (via expertise:statistics), approach:rigorous (via expertise:statistics)
+
+_Try `/crew-browse expertise:statistics function:methodology-review` to refine._
+```
+
+Skip the section if no filter tag has any non-empty `cross_facet_related` entry pointing at a populated tag. Keep it to ≤ 3 suggested refinements — this is a hint, not a dump.
 
 ### 4. Suggest a next step
 
