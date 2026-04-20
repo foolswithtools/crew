@@ -8,6 +8,10 @@ allowed-tools: Read, Bash
 
 You are the orchestrator for "discover mode" navigation. The user named one archetype; show the neighborhood around it.
 
+## Catalog location
+
+All catalog files live under `$CREW_HOME`. Run `crew home` once at the start to get the absolute path. Throughout this command body, every reference to `catalog.json`, `graph.json`, `embeddings.sqlite`, or `vocab/` means **the path under `$CREW_HOME`** — use the absolute path when calling Read or Bash. If `crew home` fails, the catalog isn't installed; tell the user to run `crew install --catalog`.
+
 ## Your task
 
 ### 1. Resolve the target
@@ -30,7 +34,7 @@ You'll assemble four sections. For each, note whether its underlying data is pre
 - **Outgoing:** every `edges.contrasts` entry with `from == target_slug`.
 - **Incoming:** every `edges.contrasts` entry with `to == target_slug`.
 
-If `graph.json` is absent, note "run `python3 scripts/build-graph.py` to populate contrasts" and skip 2a + 2b.
+If `graph.json` is absent, note "run `crew build` to populate contrasts" and skip 2a + 2b.
 
 #### 2b. Shared exemplars (from `graph.json`)
 
@@ -43,10 +47,10 @@ If nothing is shared, say so explicitly — it's a useful diagnostic that the ca
 Run via `Bash`:
 
 ```
-python3 scripts/embed-query.py --slug <target_slug> --top 5
+crew embed-query --slug <target_slug> --top 5
 ```
 
-The JSON's `ranked` list is already sorted by cosine similarity and excludes the target itself. If the output has `"embeddings_enabled": false`, say "embeddings not available (run `python3 scripts/build-embeddings.py`)" and skip this section.
+The JSON's `ranked` list is already sorted by cosine similarity and excludes the target itself. If the output has `"embeddings_enabled": false`, say "embeddings not available (run `crew build`)" and skip this section.
 
 Present each match as `- **<display_name>** — cosine {0.xx}`.
 

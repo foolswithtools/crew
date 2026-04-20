@@ -8,6 +8,10 @@ allowed-tools: Read, Glob, Bash
 
 You are the orchestrator for **The Wrecking Crew**'s critique workflow. The user has a chosen crew (from a prior `/crew` call in this conversation, or passed as arguments) and an artifact to critique.
 
+## Catalog location
+
+All catalog files live under `$CREW_HOME`. Run `crew home` once at the start to get the absolute path. Throughout this command body, every reference to `personas/`, `vocab/`, `catalog.json`, `embeddings.sqlite`, `graph.json`, or `.crew/` means **the path under `$CREW_HOME`** — use the absolute path when calling Read, Glob, Write, or Bash. If `crew home` fails, the catalog isn't installed; tell the user to run `crew install --catalog`.
+
 ## Your task
 
 ### 1. Identify the crew and the artifact
@@ -158,7 +162,7 @@ Keep this section under 250 words. You're summarizing, not adding another voice.
 After the orchestrator synthesis is in your reply, append one JSONL entry to `.crew/usage.log` capturing the crew that was actually reviewed. Run via `Bash`:
 
 ```
-python3 scripts/usage-log.py append '{"command":"crew-review","archetypes":["<slug1>","<slug2>","<slug3>","<slug4>"],"problem_hash":null,"flagged_bad_fit":[]}'
+crew usage-log append '{"command":"crew-review","archetypes":["<slug1>","<slug2>","<slug3>","<slug4>"],"problem_hash":null,"flagged_bad_fit":[]}'
 ```
 
 `archetypes` is the full crew that ran (same in Round 1 and Round 2). `flagged_bad_fit` is only populated if the user explicitly called out an archetype as a poor match during the session — otherwise leave it as `[]`. This step is bookkeeping; don't narrate it to the user unless the command fails.
