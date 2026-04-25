@@ -1,4 +1,4 @@
-# The Wrecking Crew — Design Doc
+# Crew — Design Doc
 
 Living doc capturing the vision and the principles that constrain the catalog. Updated as the shape changes; trimmed of historical deliberation that is now resolved.
 
@@ -22,7 +22,7 @@ Living doc capturing the vision and the principles that constrain the catalog. U
 - `.crew/usage.log` — JSONL invocation log (compacts to monthly aggregates past 90 days)
 - `.crew/signals.json` — by-slug counts + last-invoked + trending top-5 + new-this-month
 
-**In flight (Apr 2026):** distribution refactor — making the commands installable from any repo across Claude Code, Cursor, Codex, Windsurf, VS Code Copilot, plus an MCP server for Antigravity / Cline / Copilot CLI / Zed. Catalog data moves to `~/.wrecking-crew/`. Plan: `/Users/t/.claude/plans/read-plan-md-curious-hamster.md`.
+**In flight (Apr 2026):** distribution refactor — making the commands installable from any repo across Claude Code, Cursor, Codex, Windsurf, VS Code Copilot, plus an MCP server for Antigravity / Cline / Copilot CLI / Zed. Catalog data moves to `~/.crew/`. Plan: `/Users/t/.claude/plans/read-plan-md-curious-hamster.md`.
 
 ---
 
@@ -46,14 +46,6 @@ The chosen critics tear into your work independently (Round 1). You read the cri
 - `/crew-related <slug>` — explore from one archetype outward (contrasts, shared exemplars, semantic neighbors)
 - `/crew-audit <domain>` — coverage audit; finds gaps in the catalog
 - `/crew-review-archetype <slug>` — review an unreviewed archetype's coherence and quality
-
----
-
-## Name & inspiration
-
-Named after **The Wrecking Crew** — the LA studio musicians of the 60s-70s (Hal Blaine, Carol Kaye, Tommy Tedesco, Glen Campbell, and others) who played on an enormous share of the hits of that era, backing everyone from the Beach Boys to Sinatra to Sonny & Cher. Skilled, versatile craftspeople who worked *with* the famous name on the record — they weren't the face of the project, but they were the reason it hit.
-
-That's the pattern this catalog aims for: a deep bench of on-call experts who make *your* work better, without taking the spotlight.
 
 ---
 
@@ -95,7 +87,7 @@ These were decided through a dogfooding session that had four archetypes critiqu
 
 ## Pattern validation notes
 
-From dogfooding the Wrecking Crew pattern on its own design:
+From dogfooding the crew pattern on its own design:
 
 - Round 1 stayed distinct. The four critiques did not blend — each read as its claimed archetype. First evidence the archetype-with-exemplars format produces differentiated critique.
 - Round 2 did NOT degrade to mush. All four held their ground on specific points, engaged others' arguments directly, and produced concrete revised proposals. Tensions remained visible and productive.

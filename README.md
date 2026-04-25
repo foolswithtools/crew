@@ -1,11 +1,11 @@
-# The Wrecking Crew
+# Crew
 
 A catalog of **archetype critics** you can invoke mid-conversation in your agentic coding tool to pressure-test whatever you're working on. Two commands, two journeys.
 
 - **`/crew`** — reads what you've been working on, reflects the problem back sharper, proposes 3-4 non-overlapping critics from the catalog. If a needed archetype doesn't exist, it drafts one inline in 2 minutes and saves it.
 - **`/crew-review`** — launches the chosen crew as parallel subagents who tear into your work independently (Round 1). Optional Round 2 synthesis where they hold their ground rather than collapse to consensus.
 
-Named after [The Wrecking Crew](https://en.wikipedia.org/wiki/The_Wrecking_Crew_(music)) — the LA studio musicians who quietly played on most of the hits of the 60s-70s. Skilled craftspeople who made the star's work better without taking the spotlight. That's the pattern: a deep bench of on-call experts who make *your* work better.
+A crew is a tight working group of skilled hands you call in when you need expertise. That's the pattern: a deep bench of on-call experts who make *your* work better.
 
 ---
 
@@ -22,12 +22,12 @@ Each archetype has a specific *voice* (what they push on), explicit *blind spots
 
 ## Install
 
-The Wrecking Crew is a Python package that ships a CLI (`crew`), an MCP server (`crew-mcp`), and a multi-tool installer that fans the slash commands out into every supported agentic tool's user-level commands directory.
+Crew is a Python package that ships a CLI (`crew`), an MCP server (`crew-mcp`), and a multi-tool installer that fans the slash commands out into every supported agentic tool's user-level commands directory.
 
 ```bash
 # 1. Install the package (uv recommended; works with pipx too)
-uv tool install git+https://github.com/lugnut42/the-wrecking-crew.git
-# or: pipx install git+https://github.com/lugnut42/the-wrecking-crew.git
+uv tool install git+https://github.com/foolswithtools/crew.git
+# or: pipx install git+https://github.com/foolswithtools/crew.git
 
 # 2. Detect your tools and install commands + catalog + MCP instructions
 crew install
@@ -38,12 +38,12 @@ crew doctor
 
 `crew install` does three things:
 - **--commands** writes the 6 slash commands into each detected tool's user dir (`~/.claude/commands/`, `~/.cursor/commands/`, `~/.codex/prompts/`, `~/.codeium/windsurf/workflows/`).
-- **--catalog** populates `~/.wrecking-crew/` with the catalog (personas, vocab, indexes, embeddings, graph).
+- **--catalog** populates `~/.crew/` with the catalog (personas, vocab, indexes, embeddings, graph).
 - **--mcp** prints per-tool registration instructions for the MCP server (Claude Code, Codex, Cursor, Windsurf, Antigravity, Cline, Copilot CLI, Zed).
 
 Run individual flags (`crew install --commands` / `--catalog` / `--mcp`) if you want only one part. Use `crew install --target claude-code,cursor` to install for specific tools only.
 
-To update later: `crew update` re-copies the catalog. To remove: `crew uninstall` removes commands; `crew uninstall --purge` also removes `~/.wrecking-crew/`.
+To update later: `crew update` re-copies the catalog. To remove: `crew uninstall` removes commands; `crew uninstall --purge` also removes `~/.crew/`.
 
 ### Supported tools
 

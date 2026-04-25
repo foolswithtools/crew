@@ -28,7 +28,7 @@ from typing import Any
 import yaml
 from mcp.server.fastmcp import FastMCP
 
-from wrecking_crew.paths import (
+from crew.paths import (
     CATALOG_PATH,
     EMBEDDINGS_DB,
     GRAPH_PATH,
@@ -38,7 +38,7 @@ from wrecking_crew.paths import (
 )
 
 
-mcp = FastMCP("wrecking-crew")
+mcp = FastMCP("crew")
 
 
 def _load_catalog() -> list[dict]:

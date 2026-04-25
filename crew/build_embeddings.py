@@ -23,8 +23,8 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from wrecking_crew.paths import REPO_ROOT, PERSONAS_DIR, EMBEDDINGS_DB as DB_PATH
-from wrecking_crew.validate import split_frontmatter
+from crew.paths import REPO_ROOT, PERSONAS_DIR, EMBEDDINGS_DB as DB_PATH
+from crew.validate import split_frontmatter
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 EMBED_DIM = 384
 

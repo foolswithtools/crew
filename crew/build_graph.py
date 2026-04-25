@@ -34,8 +34,8 @@ import sys
 from itertools import combinations
 from pathlib import Path
 
-from wrecking_crew.paths import REPO_ROOT, PERSONAS_DIR, GRAPH_PATH, USAGE_LOG_PATH
-from wrecking_crew.validate import split_frontmatter
+from crew.paths import REPO_ROOT, PERSONAS_DIR, GRAPH_PATH, USAGE_LOG_PATH
+from crew.validate import split_frontmatter
 NOT_CONFUSED_HEADING = "## Not to be confused with"
 PAIR_THRESHOLD = 2  # low threshold early; tune once the log has real volume
 

@@ -36,7 +36,7 @@ import json
 import sys
 from pathlib import Path
 
-from wrecking_crew.paths import REPO_ROOT, EMBEDDINGS_DB as DB_PATH
+from crew.paths import REPO_ROOT, EMBEDDINGS_DB as DB_PATH
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 
 

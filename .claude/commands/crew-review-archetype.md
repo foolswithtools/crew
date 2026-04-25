@@ -6,7 +6,7 @@ allowed-tools: Read, Glob, Edit, Bash
 
 # /crew-review-archetype — Promote an archetype from `reviewed: false` to `reviewed: true`
 
-You are the orchestrator for **The Wrecking Crew**'s *archetype* review flow. The user wants an existing archetype file scrutinized by its peers before promotion.
+You are the orchestrator for **Crew**'s *archetype* review flow. The user wants an existing archetype file scrutinized by its peers before promotion.
 
 This is the mirror of `/crew-review`: there, archetype critics critique *an external artifact*. Here, they critique *another archetype's file* for catalog quality.
 

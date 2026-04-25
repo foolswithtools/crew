@@ -7,14 +7,14 @@ Subcommand surface:
     install           Bootstrap commands and/or catalog data
     update            Re-install catalog data (alias for `install --catalog --force`)
     uninstall         Remove installed commands; --purge also removes $CREW_HOME
-    validate          Run the validator (wrapper for wrecking_crew.validate)
+    validate          Run the validator (wrapper for crew.validate)
     build             Rebuild catalog/INDEX/embeddings/graph
     embed-query       Rank archetypes by similarity (wrapper)
     semantic-dedupe   Score a draft against the embedding index (wrapper)
     usage-log         Maintain .crew/usage.log (wrapper)
 
 Wrappers delegate to the existing module's `main()` so behavior stays
-identical to invoking `python -m wrecking_crew.<module>` directly.
+identical to invoking `python -m crew.<module>` directly.
 """
 
 from __future__ import annotations
@@ -84,13 +84,13 @@ def _format_uninstall_commands(result: dict) -> str:
 
 
 def cmd_home(args: argparse.Namespace) -> int:
-    from wrecking_crew.paths import CREW_HOME
+    from crew.paths import CREW_HOME
     print(CREW_HOME)
     return 0
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
-    from wrecking_crew.install import doctor
+    from crew.install import doctor
     report = doctor()
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))
@@ -101,7 +101,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def cmd_install(args: argparse.Namespace) -> int:
-    from wrecking_crew.install import install_commands, install_catalog, mcp_instructions
+    from crew.install import install_commands, install_catalog, mcp_instructions
 
     any_flag = args.commands or args.catalog or args.mcp
     do_commands = args.commands or not any_flag
@@ -143,7 +143,7 @@ def cmd_install(args: argparse.Namespace) -> int:
 
 
 def cmd_update(args: argparse.Namespace) -> int:
-    from wrecking_crew.install import install_catalog
+    from crew.install import install_catalog
     result = install_catalog(
         source=Path(args.source).expanduser().resolve() if args.source else None,
         dry_run=args.dry_run,
@@ -156,7 +156,7 @@ def cmd_update(args: argparse.Namespace) -> int:
 
 
 def cmd_uninstall(args: argparse.Namespace) -> int:
-    from wrecking_crew.install import uninstall_commands, uninstall_catalog
+    from crew.install import uninstall_commands, uninstall_catalog
     targets = [t.strip() for t in args.target.split(",")] if args.target else None
     result = uninstall_commands(targets=targets, dry_run=args.dry_run)
     if args.json:
@@ -185,14 +185,14 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
-    from wrecking_crew.validate import main as _main
+    from crew.validate import main as _main
     return _main(["validate", *args.paths])
 
 
 def cmd_build(args: argparse.Namespace) -> int:
-    from wrecking_crew.build_index import main as build_index_main
-    from wrecking_crew.build_embeddings import main as build_embeddings_main
-    from wrecking_crew.build_graph import main as build_graph_main
+    from crew.build_index import main as build_index_main
+    from crew.build_embeddings import main as build_embeddings_main
+    from crew.build_graph import main as build_graph_main
 
     extra = ["--check"] if args.check else []
     rc = build_index_main(["build-index", *extra])
@@ -206,7 +206,7 @@ def cmd_build(args: argparse.Namespace) -> int:
 
 
 def cmd_embed_query(args: argparse.Namespace) -> int:
-    from wrecking_crew.embed_query import main as _main
+    from crew.embed_query import main as _main
     forward = ["embed-query"]
     if args.slug:
         forward.extend(["--slug", args.slug])
@@ -223,12 +223,12 @@ def cmd_embed_query(args: argparse.Namespace) -> int:
 
 
 def cmd_semantic_dedupe(args: argparse.Namespace) -> int:
-    from wrecking_crew.semantic_duplicate_check import main as _main
+    from crew.semantic_duplicate_check import main as _main
     return _main(["semantic-dedupe", args.path])
 
 
 def cmd_usage_log(args: argparse.Namespace) -> int:
-    from wrecking_crew.usage_log import main as _main
+    from crew.usage_log import main as _main
     forward = ["usage-log", args.subcmd]
     if args.subcmd == "append":
         forward.append(args.json_blob)
@@ -238,7 +238,7 @@ def cmd_usage_log(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="crew",
-        description="The Wrecking Crew CLI — manage the catalog and slash-command install across agentic tools.",
+        description="Crew CLI — manage the catalog and slash-command install across agentic tools.",
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 

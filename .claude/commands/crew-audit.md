@@ -6,7 +6,7 @@ allowed-tools: Read, Glob, Bash
 
 # /crew-audit — Coverage audit for a named domain
 
-You are the orchestrator for **The Wrecking Crew**'s coverage-audit workflow. The user named a domain and wants to know what major schools of thought the catalog covers — and which it's missing.
+You are the orchestrator for **Crew**'s coverage-audit workflow. The user named a domain and wants to know what major schools of thought the catalog covers — and which it's missing.
 
 This is `/crew-review` turned inward: instead of critics reviewing an external artifact, critics review **the catalog itself** for completeness in a domain.
 
@@ -69,7 +69,7 @@ For each critic:
 **Common prompt template (instantiate for each lens):**
 
 ```
-You are performing a **coverage audit** for the archetype catalog called "The Wrecking Crew".
+You are performing a **coverage audit** for the archetype catalog called "Crew".
 
 **Domain under audit:** {domain}
 

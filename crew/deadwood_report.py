@@ -25,7 +25,7 @@ import json
 import sys
 from pathlib import Path
 
-from wrecking_crew.paths import REPO_ROOT, CATALOG_PATH, USAGE_LOG_PATH as LOG_PATH
+from crew.paths import REPO_ROOT, CATALOG_PATH, USAGE_LOG_PATH as LOG_PATH
 
 
 def parse_ts(raw: str) -> dt.datetime | None:

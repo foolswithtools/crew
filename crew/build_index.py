@@ -26,7 +26,7 @@ from pathlib import Path
 
 import yaml
 
-from wrecking_crew.paths import (
+from crew.paths import (
     REPO_ROOT,
     PERSONAS_DIR,
     VOCAB_DIR,
@@ -34,7 +34,7 @@ from wrecking_crew.paths import (
     INDEX_PATH,
     SIGNALS_PATH,
 )
-from wrecking_crew.validate import split_frontmatter
+from crew.validate import split_frontmatter
 
 FACETS = ("expertise", "function", "approach")
 FACET_HEADINGS = {

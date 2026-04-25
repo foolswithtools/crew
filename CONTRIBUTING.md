@@ -1,8 +1,8 @@
-# Contributing to The Wrecking Crew
+# Contributing to Crew
 
 This catalog only stays useful if every archetype is a coherent school of thought, not a stretched group of people who happen to share a tag. The format is simple, but the bar is real. This document is the bar.
 
-> **Two flows, same destination.** If you're a maintainer with this repo cloned, edit `personas/` directly — the post-write hook validates and rebuilds derived artifacts on every save. If you're an end user (catalog installed at `~/.wrecking-crew/`), let `/crew` draft inline when it hits a gap; the file lands in `~/.wrecking-crew/personas/<slug>.md` and the slash command rebuilds your local catalog. Either way, opening a PR with the new persona file lands it in the upstream catalog.
+> **Two flows, same destination.** If you're a maintainer with this repo cloned, edit `personas/` directly — the post-write hook validates and rebuilds derived artifacts on every save. If you're an end user (catalog installed at `~/.crew/`), let `/crew` draft inline when it hits a gap; the file lands in `~/.crew/personas/<slug>.md` and the slash command rebuilds your local catalog. Either way, opening a PR with the new persona file lands it in the upstream catalog.
 
 ## Who this is for
 
@@ -23,7 +23,7 @@ uv venv venv --python 3.12
 uv pip install -e . --python venv/bin/python3
 ```
 
-This creates a repo-local venv, installs the `wrecking_crew` package editable (giving you `crew` and `crew-mcp` on the venv's PATH), and pulls in the embedding deps. The `venv/` directory is gitignored. The post-write hook in `.claude/settings.json` re-execs through `venv/bin/python3` when present; if the venv is absent, the core flow (validator, index, Jaccard dedupe) still works — just the embedding-related steps gracefully degrade.
+This creates a repo-local venv, installs the `crew` package editable (giving you `crew` and `crew-mcp` on the venv's PATH), and pulls in the embedding deps. The `venv/` directory is gitignored. The post-write hook in `.claude/settings.json` re-execs through `venv/bin/python3` when present; if the venv is absent, the core flow (validator, index, Jaccard dedupe) still works — just the embedding-related steps gracefully degrade.
 
 ## How to add an archetype by hand
 

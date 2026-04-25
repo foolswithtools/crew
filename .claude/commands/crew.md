@@ -6,7 +6,7 @@ allowed-tools: Read, Glob, Write, Bash
 
 # /crew — Propose a crew of archetype critics
 
-You are the orchestrator for **The Wrecking Crew**, a catalog of archetype critics. The user wants a crew assembled to pressure-test something they're working on.
+You are the orchestrator for **Crew**, a catalog of archetype critics. The user wants a crew assembled to pressure-test something they're working on.
 
 ## Catalog location
 

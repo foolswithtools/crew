@@ -23,7 +23,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from wrecking_crew.paths import REPO_ROOT, PERSONAS_DIR
+from crew.paths import REPO_ROOT, PERSONAS_DIR
 
 
 def run(cmd: list[str]) -> subprocess.CompletedProcess:
@@ -53,12 +53,12 @@ def main() -> int:
 
     rel = file_path.relative_to(REPO_ROOT)
 
-    validate = run([sys.executable, "-m", "wrecking_crew.validate", str(file_path)])
+    validate = run([sys.executable, "-m", "crew.validate", str(file_path)])
     if validate.returncode != 0:
         sys.stderr.write(f"validator failed on {rel}:\n{validate.stdout}{validate.stderr}")
         return 2
 
-    build = run([sys.executable, "-m", "wrecking_crew.build_index"])
+    build = run([sys.executable, "-m", "crew.build_index"])
     if build.returncode != 0:
         sys.stderr.write(f"build-index failed after {rel}:\n{build.stdout}{build.stderr}")
         return 2
@@ -66,23 +66,23 @@ def main() -> int:
     # Derived artifacts beyond catalog.json — non-blocking. Failures here are
     # reported but do not reject the persona edit (embeddings + graph are
     # rebuildable from Layer 1 at any time).
-    emb = run([sys.executable, "-m", "wrecking_crew.build_embeddings", str(file_path)])
+    emb = run([sys.executable, "-m", "crew.build_embeddings", str(file_path)])
     if emb.returncode != 0:
         sys.stderr.write(f"build-embeddings warning for {rel}:\n{emb.stdout}{emb.stderr}")
 
-    graph = run([sys.executable, "-m", "wrecking_crew.build_graph"])
+    graph = run([sys.executable, "-m", "crew.build_graph"])
     if graph.returncode != 0:
         sys.stderr.write(f"build-graph warning for {rel}:\n{graph.stdout}{graph.stderr}")
 
     # Signals depend only on .crew/usage.log + git history, but INDEX.md's
     # Trending / New-this-month sections read the signals file — regenerate
     # it so INDEX.md stays fresh. Cheap and non-blocking.
-    sig = run([sys.executable, "-m", "wrecking_crew.usage_log", "signals"])
+    sig = run([sys.executable, "-m", "crew.usage_log", "signals"])
     if sig.returncode != 0:
         sys.stderr.write(f"usage-log signals warning for {rel}:\n{sig.stdout}{sig.stderr}")
     else:
         # Signals may have changed INDEX.md's derived sections; rebuild.
-        rebuild = run([sys.executable, "-m", "wrecking_crew.build_index"])
+        rebuild = run([sys.executable, "-m", "crew.build_index"])
         if rebuild.returncode != 0:
             sys.stderr.write(f"post-signals build-index warning for {rel}:\n{rebuild.stdout}{rebuild.stderr}")
 

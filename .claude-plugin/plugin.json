@@ -1,11 +1,11 @@
 {
-  "name": "wrecking-crew",
+  "name": "crew",
   "version": "0.1.0",
   "description": "A catalog of archetype critics — invoke /crew mid-conversation to pressure-test your work.",
-  "homepage": "https://github.com/lugnut42/the-wrecking-crew",
+  "homepage": "https://github.com/foolswithtools/crew",
   "commands": "./.claude/commands",
   "mcpServers": {
-    "wrecking-crew": {
+    "crew": {
       "command": "crew-mcp"
     }
   }

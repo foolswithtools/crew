@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shim — see wrecking_crew/build_embeddings.py for the implementation."""
+"""Shim — see crew/build_embeddings.py for the implementation."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from wrecking_crew.build_embeddings import main  # noqa: E402
+from crew.build_embeddings import main  # noqa: E402
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

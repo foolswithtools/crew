@@ -1,5 +1,5 @@
 [project]
-name = "wrecking-crew"
+name = "crew"
 version = "0.1.0"
 description = "A catalog of archetype critics for pressure-testing your work in any agentic coding tool."
 readme = "README.md"
@@ -14,12 +14,12 @@ dependencies = [
 ]
 
 [project.scripts]
-crew = "wrecking_crew.cli:main"
-crew-mcp = "wrecking_crew.mcp_server:main"
+crew = "crew.cli:main"
+crew-mcp = "crew.mcp_server:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["wrecking_crew"]
+packages = ["crew"]

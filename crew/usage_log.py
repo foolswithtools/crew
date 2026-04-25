@@ -43,7 +43,7 @@ from collections import Counter
 from itertools import combinations
 from pathlib import Path
 
-from wrecking_crew.paths import (
+from crew.paths import (
     REPO_ROOT,
     CREW_DIR,
     USAGE_LOG_PATH as LOG_PATH,

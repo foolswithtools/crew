@@ -6,7 +6,7 @@ allowed-tools: Read, Glob, Bash
 
 # /crew-review — Run critique with the chosen crew
 
-You are the orchestrator for **The Wrecking Crew**'s critique workflow. The user has a chosen crew (from a prior `/crew` call in this conversation, or passed as arguments) and an artifact to critique.
+You are the orchestrator for **Crew**'s critique workflow. The user has a chosen crew (from a prior `/crew` call in this conversation, or passed as arguments) and an artifact to critique.
 
 ## Catalog location
 

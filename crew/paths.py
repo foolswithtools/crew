@@ -5,10 +5,10 @@ Resolution order:
     1. $CREW_HOME environment variable (explicit override)
     2. Walk up from cwd looking for source-repo markers (author-side flow)
     3. Walk up from this file's location for the same markers (editable install)
-    4. ~/.wrecking-crew/config.json (end-user install pointer)
-    5. ~/.wrecking-crew (default)
+    4. ~/.crew/config.json (end-user install pointer)
+    5. ~/.crew (default)
 
-The source-repo markers are `personas/`, `vocab/`, and `wrecking_crew/`. End
+The source-repo markers are `personas/`, `vocab/`, and `crew/`. End
 users have the first two in $CREW_HOME but not the third (the package code
 lives in their site-packages), so the marker reliably distinguishes
 "running inside the source repo" from "running against an installed catalog".
@@ -28,7 +28,7 @@ def _looks_like_source_repo(p: Path) -> bool:
     return (
         (p / "personas").is_dir()
         and (p / "vocab").is_dir()
-        and (p / "wrecking_crew").is_dir()
+        and (p / "crew").is_dir()
     )
 
 
@@ -47,7 +47,7 @@ def crew_home() -> Path:
         if _looks_like_source_repo(candidate):
             return candidate
 
-    cfg = Path.home() / ".wrecking-crew" / "config.json"
+    cfg = Path.home() / ".crew" / "config.json"
     if cfg.exists():
         try:
             data = json.loads(cfg.read_text(encoding="utf-8"))
@@ -57,7 +57,7 @@ def crew_home() -> Path:
         except (OSError, json.JSONDecodeError, KeyError):
             pass
 
-    return Path.home() / ".wrecking-crew"
+    return Path.home() / ".crew"
 
 
 CREW_HOME = crew_home()

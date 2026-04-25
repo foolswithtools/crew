@@ -30,8 +30,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-from wrecking_crew import __version__
-from wrecking_crew.paths import crew_home as _resolve_crew_home
+from crew import __version__
+from crew.paths import crew_home as _resolve_crew_home
 
 
 COMMAND_NAMES = (
@@ -101,7 +101,7 @@ def _source_repo_root() -> Path | None:
         if (
             (candidate / "personas").is_dir()
             and (candidate / "vocab").is_dir()
-            and (candidate / "wrecking_crew").is_dir()
+            and (candidate / "crew").is_dir()
         ):
             return candidate
     return None
@@ -125,7 +125,7 @@ def install_commands(targets: list[str] | None = None, dry_run: bool = False) ->
     if source_repo is None:
         raise SystemExit(
             "crew install --commands: cannot locate the source repo "
-            "(re-install via `uv tool install wrecking-crew` from a Release in v0.2)."
+            "(re-install via `uv tool install crew` from a Release in v0.2)."
         )
     src_dir = _commands_source_dir(source_repo)
     if src_dir is None:
@@ -280,15 +280,15 @@ def uninstall_commands(targets: list[str] | None = None, dry_run: bool = False) 
 
 def uninstall_catalog(crew_home: Path | None = None, dry_run: bool = False) -> dict:
     """Remove the entire $CREW_HOME directory. Refuses if it looks like the
-    source repo (presence of `wrecking_crew/` package dir)."""
+    source repo (presence of `crew/` package dir)."""
     if crew_home is None:
         crew_home = _resolve_crew_home()
     crew_home = crew_home.resolve()
 
-    if (crew_home / "wrecking_crew").is_dir():
+    if (crew_home / "crew").is_dir():
         raise SystemExit(
             f"crew uninstall --purge: refusing to delete {crew_home} — "
-            "it looks like the source repo (contains wrecking_crew/)"
+            "it looks like the source repo (contains crew/)"
         )
 
     if not crew_home.exists():
@@ -302,42 +302,42 @@ def uninstall_catalog(crew_home: Path | None = None, dry_run: bool = False) -> d
 
 
 MCP_INSTRUCTIONS = """\
-The Wrecking Crew MCP server (`crew-mcp`) exposes the catalog as read-only
+The Crew MCP server (`crew-mcp`) exposes the catalog as read-only
 tools. Register it once per tool — the same server binary serves all of them.
 
 [Claude Code]
-    claude mcp add wrecking-crew --scope user -- crew-mcp
+    claude mcp add crew --scope user -- crew-mcp
 
 [Codex CLI]
-    codex mcp add wrecking-crew -- crew-mcp
+    codex mcp add crew -- crew-mcp
 
 [Cursor]
     Edit ~/.cursor/mcp.json and add under "mcpServers":
-        "wrecking-crew": { "command": "crew-mcp" }
+        "crew": { "command": "crew-mcp" }
 
 [Windsurf]
     Settings -> Cascade -> MCP Servers -> Add Server
-        Name: wrecking-crew
+        Name: crew
         Command: crew-mcp
 
 [Antigravity]
     Edit ~/.gemini/antigravity/mcp_config.json and add under "mcpServers":
-        "wrecking-crew": { "command": "crew-mcp" }
+        "crew": { "command": "crew-mcp" }
     Or use the in-editor MCP Store and add a custom server with command: crew-mcp
 
 [Cline]
     Cline panel -> MCP Servers -> Edit -> add:
-        "wrecking-crew": { "command": "crew-mcp" }
+        "crew": { "command": "crew-mcp" }
 
 [GitHub Copilot CLI]
-    /mcp add wrecking-crew -- crew-mcp
+    /mcp add crew -- crew-mcp
 
 [Zed]
     Edit ~/.config/zed/settings.json under "context_servers":
-        "wrecking-crew": { "command": { "path": "crew-mcp" } }
+        "crew": { "command": { "path": "crew-mcp" } }
 
 If `crew-mcp` is not on PATH, replace it with the absolute path returned by
-`which crew-mcp` (or `uvx --from wrecking-crew crew-mcp` if running via uv).
+`which crew-mcp` (or `uvx --from crew crew-mcp` if running via uv).
 """
 
 

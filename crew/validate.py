@@ -31,7 +31,7 @@ from pathlib import Path
 
 import yaml
 
-from wrecking_crew.paths import REPO_ROOT, PERSONAS_DIR, VOCAB_DIR
+from crew.paths import REPO_ROOT, PERSONAS_DIR, VOCAB_DIR
 
 REQUIRED_FRONTMATTER_FIELDS = [
     "name",
