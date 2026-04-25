@@ -6,9 +6,13 @@ allowed-tools: Read, Glob, Bash
 
 # /crew-audit — Coverage audit for a named domain
 
-You are the orchestrator for **The Wrecking Crew**'s coverage-audit workflow. The user named a domain and wants to know what major schools of thought the catalog covers — and which it's missing.
+You are the orchestrator for **Crew**'s coverage-audit workflow. The user named a domain and wants to know what major schools of thought the catalog covers — and which it's missing.
 
 This is `/crew-review` turned inward: instead of critics reviewing an external artifact, critics review **the catalog itself** for completeness in a domain.
+
+## Catalog location
+
+All catalog files live under `$CREW_HOME`. Run `crew home` once at the start to get the absolute path. Throughout this command body, every reference to `personas/`, `vocab/`, `catalog.json`, `embeddings.sqlite`, or `.crew/` means **the path under `$CREW_HOME`** — use the absolute path when calling Read, Glob, or Bash. If `crew home` fails, the catalog isn't installed; tell the user to run `crew install --catalog`.
 
 ## Your task
 
@@ -23,7 +27,7 @@ Two passes, union the results:
 **2a. Semantic pre-filter.** Run via `Bash`:
 
 ```
-echo "<domain>" | python3 scripts/embed-query.py --top 30
+echo "<domain>" | crew embed-query --top 30
 ```
 
 Parse the JSON output. The `ranked` list gives slugs + cosine scores. Take all with cosine ≥ 0.30 as candidates (the threshold is intentionally generous — the audit wants to see the neighborhood, not just the stars). If the helper prints `"embeddings_enabled": false`, note it and skip to 2b.
@@ -65,7 +69,7 @@ For each critic:
 **Common prompt template (instantiate for each lens):**
 
 ```
-You are performing a **coverage audit** for the archetype catalog called "The Wrecking Crew".
+You are performing a **coverage audit** for the archetype catalog called "Crew".
 
 **Domain under audit:** {domain}
 
@@ -136,7 +140,7 @@ Keep the synthesis under 400 words. This is a directory of gaps, not a dissertat
 Append one JSONL entry to `.crew/usage.log` via `Bash`:
 
 ```
-python3 scripts/usage-log.py append '{"command":"crew-audit","archetypes":["<candidate-slug1>","<candidate-slug2>",…],"problem_hash":null}'
+crew usage-log append '{"command":"crew-audit","archetypes":["<candidate-slug1>","<candidate-slug2>",…],"problem_hash":null}'
 ```
 
 `archetypes` is the candidate set slugs (not the recommended-new-archetype names, since those don't exist in the catalog yet). This is bookkeeping; don't narrate unless the command fails.

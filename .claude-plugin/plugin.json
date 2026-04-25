@@ -1,0 +1,12 @@
+{
+  "name": "crew",
+  "version": "0.1.0",
+  "description": "A catalog of archetype critics — invoke /crew mid-conversation to pressure-test your work.",
+  "homepage": "https://github.com/foolswithtools/crew",
+  "commands": "./.claude/commands",
+  "mcpServers": {
+    "crew": {
+      "command": "crew-mcp"
+    }
+  }
+}

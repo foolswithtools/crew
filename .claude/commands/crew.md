@@ -6,7 +6,11 @@ allowed-tools: Read, Glob, Write, Bash
 
 # /crew — Propose a crew of archetype critics
 
-You are the orchestrator for **The Wrecking Crew**, a catalog of archetype critics. The user wants a crew assembled to pressure-test something they're working on.
+You are the orchestrator for **Crew**, a catalog of archetype critics. The user wants a crew assembled to pressure-test something they're working on.
+
+## Catalog location
+
+All catalog files live under `$CREW_HOME`. Run `crew home` once at the start to get the absolute path. Throughout this command body, every reference to `personas/`, `vocab/`, `catalog.json`, `embeddings.sqlite`, `graph.json`, or `.crew/` means **the path under `$CREW_HOME`** — use the absolute path when calling Read, Glob, Write, or Bash. If `crew home` fails or returns nothing, the catalog isn't installed; tell the user to run `crew install --catalog`.
 
 ## Your task
 
@@ -21,7 +25,7 @@ If `$ARGUMENTS` contains a problem description, treat that as the brain-dump. Ot
 **At larger catalogs (> 20 archetypes):** use the embedding index as a pre-filter so you don't read every file. Pipe your one-paragraph **Problem I'm hearing** synthesis (from step 1) into the ranker, then read only the top matches plus any you suspect are adjacent:
 
 ```
-echo "<problem synthesis>" | python3 scripts/embed-query.py --top 20
+echo "<problem synthesis>" | crew embed-query --top 20
 ```
 
 The helper emits JSON with `ranked` (slug + display_name + cosine). Read the top-20 personas files. If the helper prints `"embeddings_enabled": false` (deps missing or `embeddings.sqlite` absent), fall back to reading every file — don't block. Record a one-line note in your reply if you used the pre-filter (e.g. `embedding pre-filter: 20 of N archetypes loaded`).
@@ -100,7 +104,7 @@ For each existing archetype, compute two numbers:
    Closest match: <display_name> — exemplar Jaccard 0.XX, tag overlap N
    ```
 
-   **Thresholds (from `design/housekeeping-plan.md` P2.2):**
+   **Thresholds:**
    - Exemplar Jaccard **> 0.6** OR tag overlap **> 3** → **possible overlap**. Stop. Name the matched archetype. Ask the user: refine the existing one, draft a deliberately contrasting variant, or proceed with explicit justification — and if they choose "proceed," write the justification into your reply (1–2 sentences naming the specific philosophical difference that makes this a genuinely new school, not a repackaging).
    - Also stop if the proposed `display_name` is a near-synonym of an existing one (e.g., "The Quant Researcher" vs. "The Rigorous Quant-ML Researcher") or if either exemplar list is a full subset of the other (the validator will catch this post-save, but surfacing it here avoids the round-trip).
    - Otherwise: state "below threshold, proceeding" after the closest match line.
@@ -111,7 +115,7 @@ For each existing archetype, compute two numbers:
 The Jaccard/tag check above is a cheap first pass; it won't catch paraphrases of existing archetypes with disjoint exemplars and tags. This second pass does. Procedure:
 
    1. Write the full proposed draft (frontmatter + all five prose sections, exactly what you're about to `Write` to `personas/`) to `.crew/draft-check.md`. The `.crew/` directory is gitignored and the post-write hook ignores writes outside `personas/`, so this scratch file won't trigger index rebuilds.
-   2. Run `python3 scripts/semantic-duplicate-check.py .crew/draft-check.md` via `Bash`. It prints JSON with `top_matches` (top 5 by cosine similarity), `max_cosine`, and `trip_threshold` (one of `distinct` / `related` / `duplicate`).
+   2. Run `crew semantic-dedupe $CREW_HOME/.crew/draft-check.md` via `Bash`. It prints JSON with `top_matches` (top 5 by cosine similarity), `max_cosine`, and `trip_threshold` (one of `distinct` / `related` / `duplicate`).
    3. Surface the top 3 matches in your reply as a visible line, one per match:
 
       ```
@@ -147,14 +151,24 @@ The Librarian's voice is a gate, not an oracle. The user can always override —
 
 #### Save
 
-Only after all six checks pass (or any EDIT verdict from the Librarian has been explicitly resolved with the user): use `Write` to save to `personas/<kebab-case-slug>.md`. Then confirm to the user: "Saved to `personas/<slug>.md` (`reviewed: false`). Run `python3 scripts/validate.py personas/<slug>.md` to confirm format. Crew is complete. Ready for `/crew-review`?"
+Only after all six checks pass (or any EDIT verdict from the Librarian has been explicitly resolved with the user): use `Write` to save to `$CREW_HOME/personas/<kebab-case-slug>.md`.
+
+Then immediately rebuild the local catalog so the new archetype is searchable:
+
+```
+crew validate $CREW_HOME/personas/<slug>.md && crew build
+```
+
+(Author-side, the PostToolUse hook also rebuilds — running `crew build` again is idempotent.)
+
+Confirm to the user: "Saved to `$CREW_HOME/personas/<slug>.md` (`reviewed: false`). Catalog rebuilt. Crew is complete. Ready for `/crew-review`? To contribute upstream, open a PR with the file."
 
 #### Log the draft
 
 After `Write` succeeds, append one JSONL entry to `.crew/usage.log` capturing what was drafted and the nearest neighbors from the duplicate check. Run via `Bash`:
 
 ```
-python3 scripts/usage-log.py append '{"command":"crew-draft","archetypes":["<top-5 semantic neighbor slugs>"],"saved_slug":"<new-slug>","problem_hash":null}'
+crew usage-log append '{"command":"crew-draft","archetypes":["<top-5 semantic neighbor slugs>"],"saved_slug":"<new-slug>","problem_hash":null}'
 ```
 
 Use the semantic-duplicate-check top-5 slugs as `archetypes` (dropping any that don't resolve). This populates `frequently_paired_with` edges with "what got drafted next to what" signal. Failure of the append step is non-blocking — mention it in the reply but don't re-save the archetype.
@@ -164,7 +178,7 @@ Use the semantic-duplicate-check top-5 slugs as `archetypes` (dropping any that 
 At the end of the seek-it flow (after the "Confirm or redirect" block is in your reply), append one JSONL entry to `.crew/usage.log` capturing the proposed crew. Run via `Bash`:
 
 ```
-python3 scripts/usage-log.py append '{"command":"crew-seek","archetypes":["<slug1>","<slug2>","<slug3>"],"problem_hash":null}'
+crew usage-log append '{"command":"crew-seek","archetypes":["<slug1>","<slug2>","<slug3>"],"problem_hash":null}'
 ```
 
 `archetypes` is the list of archetype slugs you actually surfaced in the numbered crew (drop any "missing archetype" placeholder entries; include only resolved slugs). If the user later redirects the crew in a follow-up turn, that redirect produces its own `/crew` call and its own log entry — don't retroactively amend the earlier one.

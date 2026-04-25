@@ -6,9 +6,13 @@ allowed-tools: Read, Glob, Edit, Bash
 
 # /crew-review-archetype — Promote an archetype from `reviewed: false` to `reviewed: true`
 
-You are the orchestrator for **The Wrecking Crew**'s *archetype* review flow. The user wants an existing archetype file scrutinized by its peers before promotion.
+You are the orchestrator for **Crew**'s *archetype* review flow. The user wants an existing archetype file scrutinized by its peers before promotion.
 
 This is the mirror of `/crew-review`: there, archetype critics critique *an external artifact*. Here, they critique *another archetype's file* for catalog quality.
+
+## Catalog location
+
+All catalog files live under `$CREW_HOME`. Run `crew home` once at the start to get the absolute path. Throughout this command body, every reference to `personas/`, `catalog.json`, or `.crew/` means **the path under `$CREW_HOME`** — use the absolute path when calling Read, Glob, Edit, or Bash. If `crew home` fails, the catalog isn't installed; tell the user to run `crew install --catalog`.
 
 ## Your task
 
@@ -117,7 +121,7 @@ Ask:
 
 > Flip `reviewed: false` → `reviewed: true` on `personas/<slug>.md` now? (yes / no)
 
-If the user says yes, use `Edit` to change exactly the `reviewed: false` line to `reviewed: true` in `personas/<slug>.md`. Confirm the post-write hook will re-run the validator and rebuild the catalog automatically.
+If the user says yes, use `Edit` to change exactly the `reviewed: false` line to `reviewed: true` in `$CREW_HOME/personas/<slug>.md`. Then run `crew validate $CREW_HOME/personas/<slug>.md && crew build` to refresh the local catalog (the author-side post-write hook also rebuilds; running `crew build` again is idempotent).
 
 If the recommendation is EDIT or REJECT, do NOT offer the flip. Summarize the required edits (for EDIT) or the merge/split path (for REJECT) and hand back to the user.
 
@@ -126,7 +130,7 @@ If the recommendation is EDIT or REJECT, do NOT offer the flip. Summarize the re
 After the synthesis is in your reply (regardless of PROMOTE / EDIT / REJECT), append one JSONL entry to `.crew/usage.log` capturing the target and the critic trio. Run via `Bash`:
 
 ```
-python3 scripts/usage-log.py append '{"command":"crew-review-archetype","archetypes":["<target-slug>","<critic1-slug>","<critic2-slug>","<critic3-slug>"],"problem_hash":null}'
+crew usage-log append '{"command":"crew-review-archetype","archetypes":["<target-slug>","<critic1-slug>","<critic2-slug>","<critic3-slug>"],"problem_hash":null}'
 ```
 
 Put the target first; the three critic slugs follow. This step is bookkeeping; do not narrate it unless the command fails.

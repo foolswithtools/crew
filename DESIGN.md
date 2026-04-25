@@ -1,105 +1,51 @@
-# The Wrecking Crew — Design Doc
+# Crew — Design Doc
 
-Living doc capturing the vision and design decisions. Updated as we go.
+Living doc capturing the vision and the principles that constrain the catalog. Updated as the shape changes; trimmed of historical deliberation that is now resolved.
 
 ---
 
-## Status — MVP + full housekeeping plan (Phases 1-4) shipped (last updated 2026-04-19)
+## Status (last updated 2026-04-19)
 
-**Shipped and on `origin/main`:**
-- **Catalog:** 9 archetypes in `personas/` — rigorous-quant-ml-researcher, regime-aware-macro-thinker, data-honesty-skeptic, classical-chartist (drafted inline during MVP e2e test, `reviewed: false`), jobs-to-be-done-theorist, contrarian-simplicity-skeptic, continuous-discovery-pm, information-architect, the-librarian (meta-archetype for catalog hygiene)
+**Shipped on `origin/main`:**
+- **Catalog:** 9 archetypes in `personas/` — rigorous-quant-ml-researcher, regime-aware-macro-thinker, data-honesty-skeptic, classical-chartist, jobs-to-be-done-theorist, contrarian-simplicity-skeptic, continuous-discovery-pm, information-architect, the-librarian (meta-archetype for catalog hygiene)
 - **Commands** in `.claude/commands/`: `/crew`, `/crew-review`, `/crew-review-archetype`, `/crew-browse`, `/crew-related`, `/crew-audit`
 - **Scripts** in `scripts/`: `validate.py`, `build-index.py`, `build-embeddings.py`, `build-graph.py`, `semantic-duplicate-check.py`, `embed-query.py`, `usage-log.py`, `deadwood-report.py`, `post-write-hook.py`
 - **Source-of-truth docs:** `SCHEMA.md`, `TEMPLATE.md`, `CONTRIBUTING.md`, `vocab/{expertise,function,approach}.yml` (SKOS within-facet + cross-facet)
-- **Automation:** `.claude/settings.json` PostToolUse hook validates and rebuilds all Layer 2 artifacts on every persona Write/Edit
+- **Automation:** `.claude/settings.json` PostToolUse hook validates and rebuilds all derived artifacts on every persona Write/Edit
 - **External deps:** `requirements.txt` (PyYAML, sentence-transformers, sqlite-vec, numpy) + gitignored `venv/`; hook re-execs through venv
 
-**Derived Layer 2 artifacts (gitignored, auto-rebuilt):**
+**Derived artifacts (gitignored, auto-rebuilt):**
 - `catalog.json` — machine manifest with content hashes
-- `INDEX.md` — human browse, facet-grouped + Signals section (Trending / New this month) + Unreviewed section
+- `INDEX.md` — human browse, facet-grouped, with Trending / New / Unreviewed sections
 - `embeddings.sqlite` — 384-dim MiniLM vectors via sqlite-vec
-- `graph.json` — contrast edges (20), shared-exemplar edges (0 by design), frequently-paired-with edges (populated from usage log at count ≥ 2)
-- `.crew/usage.log` — JSONL invocation log; compacts to monthly aggregates past 90 days
+- `graph.json` — contrast edges, shared-exemplar edges, frequently-paired-with edges (from usage log)
+- `.crew/usage.log` — JSONL invocation log (compacts to monthly aggregates past 90 days)
 - `.crew/signals.json` — by-slug counts + last-invoked + trending top-5 + new-this-month
 
-**Commits on `origin/main` (discrete reset points):**
-- `75610f1` Phase 4: usage signals, trending, librarian, coverage audit, cross-facet SKOS
-- `e4df0d8` Phase 3: embedding index, semantic dedupe, relationship graph, navigation
-- `93169d2` Phase 2: build pipeline, write hook, SKOS vocab, review promotion
-- `fe05634` Phase 1: validator, controlled vocab, contribution guide
-- `1c643ea` Pivot to archetype model: build MVP with /crew commands + seed catalog
-
-**Validation (all gates clean as of last run):**
-- Validator: 9 files, 0 errors, 0 warnings
-- `build-index --check`: no drift
-- `build-embeddings --check`: no drift
-- `build-graph --check`: no drift
-- Semantic dedupe trips as designed (cosine 0.72 on disjoint-exemplar paraphrase of data-honesty-skeptic)
-- Hook fires correctly across non-persona / valid / malformed write scenarios
-
-**Open / parked items (nothing urgent):**
-- **Use it.** The catalog has scaled-up scaffolding but only 9 archetypes. Run `/crew` on real problems; let the catalog grow organically through gap-drafts. Observe what breaks at 20-50 archetypes that doesn't break at 9.
-- **Share it.** README still invites use, but the catalog is single-user today. Contributor outreach is the next axis of growth.
-- **Demand-moment evidence:** still unproven — does "I want critics on this" recur often enough to be a real product? The usage log now captures this; wait for signal.
-- **New territory (off the housekeeping plan):** web UI, multi-user, archetype versioning, domain-specific seed packs, auto-merge-suggestions between near-duplicates surfaced by embeddings.
-- Vocabulary cosmetic: directory is `personas/` but content says "archetype." Rename is cheap but not blocking.
-
-**To resume cold:**
-1. Read this Status block and "The simple version" below.
-2. For the validated Seeker journey spec: `design/journey-seeker.md`.
-3. For the full architecture + phase plan (all phases now Done): `design/housekeeping-plan.md`.
-4. For dogfood evidence the pattern works: `design/round1-journey-critiques.md` and `design/round2-journey-synthesis.md`.
-5. To see the end-to-end flow in action: `examples/stock-ml-use-case.md`.
-6. Tree on disk should be clean; `git log --oneline -5` shows the five commits above.
+**In flight (Apr 2026):** distribution refactor — making the commands installable from any repo across Claude Code, Cursor, Codex, Windsurf, VS Code Copilot, plus an MCP server for Antigravity / Cline / Copilot CLI / Zed. Catalog data moves to `~/.crew/`. Plan: `/Users/t/.claude/plans/read-plan-md-curious-hamster.md`.
 
 ---
 
----
+## The simple version
 
-## The simple version (canonical)
-
-*After Round 1, Round 2, and a grounded Seeker role-play, stepping back to the minimum product.*
-
-**What this is:** a command that gets you good critics on demand while you're working in Claude.
+**What this is:** a command that gets you good critics on demand while you're working in an agentic coding tool.
 
 **Two journeys. Two commands.**
 
 ### Journey 1 — Get the Crew (`/crew`)
 
-Mid-conversation with Claude on something → run the command → Claude reads what you've been working on, tells you what it thinks you're trying to pressure-test, proposes 3-4 critics who'd push on it from non-overlapping angles. You say yes or redirect. If a critic doesn't exist, Claude drafts one in 2 minutes inline and it joins the crew.
+Mid-conversation with the agent on something → run the command → it reads what you've been working on, tells you what it thinks you're trying to pressure-test, proposes 3-4 critics who'd push on it from non-overlapping angles. You say yes or redirect. If a critic doesn't exist, the agent drafts one in 2 minutes inline and it joins the crew.
 
-Full spec: [`design/journey-seeker.md`](design/journey-seeker.md).
+### Journey 2 — Run the Critique (`/crew-review`)
 
-### Journey 2 — Run the Critique (`/crew review`)
+The chosen critics tear into your work independently (Round 1). You read the critiques. Optional Round 2 synthesis where they compare notes and propose a plan, holding their ground rather than collapsing to consensus.
 
-The chosen critics tear into your work independently. You read the critiques. Optional synthesis round where they compare notes and propose a plan.
+### Supporting commands
 
-Spec: TBD.
-
-### What's explicitly *not* a journey
-
-- **Contribute** → inline inside Journey 1 when there's a gap. Not a separate flow.
-- **Maintain** → edit/delete files, `git commit`. No system.
-- **Browse** → `ls personas/`. No system.
-- **Calibrate** → edit the file after a bad run. No system.
-- **Orient** → Journey 1's reflection shows newcomers the catalog through their own problem. No tour.
-
-### What we actually need to build
-
-- `/crew` command — reflect + propose + optional inline draft
-- `/crew review` command — Round 1 + optional Round 2
-- A consistent archetype file format so both commands can read them
-- A small seed set of archetypes to prove it works
-
-Everything else is git and markdown.
-
----
-
-## Name & inspiration
-
-Named after **The Wrecking Crew** — the LA studio musicians of the 60s-70s (Hal Blaine, Carol Kaye, Tommy Tedesco, Glen Campbell, and others) who played on an enormous share of the hits of that era, backing everyone from the Beach Boys to Sinatra to Sonny & Cher. Skilled, versatile craftspeople who worked *with* the famous name on the record — they weren't the face of the project, but they were the reason it hit.
-
-That's the pattern this catalog aims for: a deep bench of on-call experts who make *your* work better, without taking the spotlight. Preserve in end-user README and repo framing.
+- `/crew-browse` — facet-filtered table of contents
+- `/crew-related <slug>` — explore from one archetype outward (contrasts, shared exemplars, semantic neighbors)
+- `/crew-audit <domain>` — coverage audit; finds gaps in the catalog
+- `/crew-review-archetype <slug>` — review an unreviewed archetype's coherence and quality
 
 ---
 
@@ -115,134 +61,45 @@ Archetypes, not celebrities. The exemplars calibrate the voice; they aren't bran
 
 1. **Coherence test.** Exemplars inside one persona must agree on ~80% of first principles about *how* to approach their craft. If not, split them into separate personas. (Buffett + Munger = one persona. Buffett + Burry = two.)
 
-2. **Preserve uniqueness.** The catalog grows by *schools of thought*, not by famous people. A domain might have 4-6 personas, not 50. Each persona explicitly contrasts with adjacent ones so invocations don't blend them into mush.
+2. **Preserve uniqueness.** The catalog grows by *schools of thought*, not by famous people. A domain might have 4-6 personas, not 50. Each persona explicitly contrasts with adjacent ones so invocations don't blend into mush.
 
 3. **Retrieval is first-class.** The killer feature is "who do I need for this problem?" — answered quickly, with reasoning, suggesting a complementary mix rather than overlapping picks.
 
-4. **Contribution-friendly, drift-resistant.** Anyone can add a persona via PR. A checklist + maintainer review prevents duplicates and catches personas that have drifted into incoherence.
+4. **Non-overlap is load-bearing.** A crew is useful because its members attack from different angles. Two similar critics is a waste. Round 2 synthesis is valuable because the critics held their ground in Round 1.
+
+5. **Contribution is demand-driven.** Archetypes get added when `/crew` discovers a real gap during crew assembly, not by someone populating categories. The catalog grows where pull exists.
+
+6. **Folder of markdown, not a product.** No tracker, no governance, no workflow engine. Just files, git, and a small set of commands.
 
 ---
 
-## User journeys (DRAFT — to refine together)
+## Decisions on record
 
-### J1. Seeker — "Who do I need?"
-I have a problem, question, plan, or artifact. I don't know which experts to ask. I want the catalog to surface 3-5 relevant personas with a one-line "why this one" for each, ideally suggesting a *complementary* mix (domain expert + critic + synthesizer) rather than three overlapping picks.
+These were decided through a dogfooding session that had four archetypes critique an earlier draft journey set. The raw deliberation is no longer load-bearing; the outcomes are:
 
-### J2. Reviewer — "Run the critique workflow"
-I've picked personas (or accepted the suggestions). I want to run Round 1 (each gives independent critique in their voice, without blending) and Round 2 (they compare notes and converge on a plan or surface unresolved tensions).
-
-### J3. Contributor — "Add a persona"
-I've noticed a gap, or I have deep knowledge of a school of thought. I want to add a persona without accidentally duplicating an existing one, and I want the coherence test and format to be easy to follow.
-
-### J4. Maintainer — "Keep the catalog healthy"
-I review contributions. I need to spot duplicates, catch personas that have drifted (exemplars no longer cohere), split personas that have quietly blended two schools, and merge redundant ones.
-
-### J5. Browser — "See what's here"
-I want to skim the catalog by dimension (expertise, function, approach) to discover personas I didn't know I needed, or to understand the landscape of schools in a domain.
-
-### J6. Calibrator — "Improve a persona"
-I invoked a persona and the voice felt off — a blind spot was missing, an exemplar didn't fit, the contrast with a sibling persona wasn't sharp enough. I want to file a concrete improvement.
+- **Two journeys, not six.** Get the Crew + Run the Critique. Contribute, maintain, browse, calibrate, and orient are either inline sub-steps, filesystem operations, or fall out of the two real journeys.
+- **Contribution is inline.** Adding an archetype happens inside Journey 1 when a gap is detected during crew assembly — the moment user motivation is highest. Not its own journey.
+- **Seeker shape: Capture → Read → Reflect → Confirm/Redirect.** The Reflect step does double duty — proves understanding *and* sharpens the problem before critique starts. Fixed crew of ~4 non-overlapping archetypes with one named alternative swap.
+- **Round 2 holds ground rather than collapsing.** The explicit "stay in character, don't capitulate to seem reasonable" instruction is what keeps synthesis productive. Without it, Round 2 collapses to consensus.
+- **Provenance is part of the value.** The catalog's differentiation vs. raw LLM is partly *who you pressure-tested against* — felt authority and traceable schools of thought, not just critique quality.
 
 ---
 
-## Round 2 synthesis of the journeys (dogfood, continued)
+## Pattern validation notes
 
-Same four personas, each given all four Round 1 critiques. Full Round 2: [`design/round2-journey-synthesis.md`](design/round2-journey-synthesis.md).
+From dogfooding the crew pattern on its own design:
 
-### New convergences (all four, after seeing each other)
-
-- **Cut J3/J4/J5/J6 as standalone journeys.** Uniform agreement. Speculative governance for an unproven catalog.
-- **Add a "Skeptic/Bouncer" shadow journey** (PM's idea, adopted by JTBD and Skeptic) — instrument who tried once and didn't return. That's the honest outcome signal.
-- **The Round 1/Round 2 critique workflow is not a journey through the catalog** — it's a usage pattern on selected archetypes. Belongs in a different plane (IA, Skeptic) or as a prompt template, not a workflow engine (Skeptic).
-- **The "persona" object needs a better name.** Every voice wrestled with it. IA called it out as "archetypal critic" — persona has a UX meaning already.
-
-### Productive tensions (not resolved — these are the real design choices)
-
-1. **Vocabulary-first vs. prototype-first.** IA: you cannot test findability on a set whose members aren't comparable — smuggled taxonomies are worse than absent ones. CDPM: you settle vocabulary by watching five users fumble the words, not in a doc. Skeptic: 44 is small enough to scroll, no map needed yet. **Which of three FIRST moves?**
-   - IA: name the 3-5 dimensions, retrofit all 44 files
-   - CDPM: 5 switch interviews this week, no prototype
-   - Skeptic: run 3 real decisions through the catalog manually in a Google Doc this afternoon
-   - JTBD: 5 JTBD interviews with people who shipped something they later regretted
-2. **Is the catalog meaningfully better than raw LLM?** Skeptic's "raw nails 80% cold." JTBD's counter (strong): attribution and the *social* job — "I pressure-tested against the Christensen school, not just 'an AI'" — is part of the hire, not frosting. The felt authority, not the words, is the value. Partial resolution: catalog's differentiation may be *provenance* not *critique quality*.
-3. **Is the demand moment real and recurring?** (CDPM, Skeptic, JTBD all circle this.) If "my thinking is incomplete, seek critics" happens 2×/year per user, there is no product — regardless of quality. The real competitor is "ship it and hope."
-4. **Does the archetype abstraction survive contact?** Skeptic's remaining concern: users may actually want *named individuals* (DHH, Christensen). The archetype layer may be the abstraction future-you pays for. Untested.
-5. **J0 Orienteer: job, task, or baked-into-Seeker?** IA wants it standalone, JTBD folds it in, Skeptic and CDPM cut it.
-
-### Converged revised journey set (where agreement is strong)
-
-With tensions held open:
-
-- **Seeker (core)** — *When I suspect my thinking has a blind spot before a decision I'll have to live with, I want to hire 2-4 archetypes to pressure-test it, so I can ship with earned confidence and name who I pressure-tested against.* (JTBD framing adopted; IA wants dimensional filtering inside, CDPM wants "48-hour material-decision change" as the outcome KPI, Skeptic wants it to ship as "search + pick.")
-- **Critiquer / Reviewer (usage pattern, not journey)** — Round 1/Round 2 as a prompt template, not a workflow engine.
-- **Bouncer / Skeptic (instrumented shadow journey, research-only)** — catch non-returners; the kill/keep signal.
-- **Calibrator (fold J4+J6)** — sharpen or retire an archetype that underperformed. Deferred until Seeker has volume, but name the operations (split, merge, drift, gap) per IA.
-
-**J0 Orienteer** remains a live question.
-
-### My (orchestrator) read
-
-The four are pointing at the same cliff from different sides. Vocabulary, evidence, simplicity, and jobs-to-be-done all compound — they don't force a single first move, but they *do* rule out "start building retrieval." The cheapest informative move combines elements of all four recommendations: pick 2-3 real decisions you've faced recently, manually run Seeker + Round 1/Round 2 against the current 44 personas in a Google Doc (Skeptic + CDPM), while writing down what vocabulary you had to invent on the fly (IA) and whether you felt dread-reduction (JTBD). One afternoon, exits with evidence on demand, vocabulary, and pattern value simultaneously.
+- Round 1 stayed distinct. The four critiques did not blend — each read as its claimed archetype. First evidence the archetype-with-exemplars format produces differentiated critique.
+- Round 2 did NOT degrade to mush. All four held their ground on specific points, engaged others' arguments directly, and produced concrete revised proposals. Tensions remained visible and productive.
+- Subagents work well for Round 1 — natural parallelism, no cross-contamination, each stays in voice.
+- Persona prompt shape that worked: name + exemplars + shared philosophy + what they push on + blind spots + stay-in-character instruction. These fields became the archetype format.
 
 ---
 
-## Round 1 critique of the journeys (dogfood)
+## Pointers
 
-Ran four archetype personas as parallel subagents against the 6 draft journeys. Full critiques: [`design/round1-journey-critiques.md`](design/round1-journey-critiques.md).
-
-**Archetypes used:** JTBD Theorist (Christensen, Ulwick) · Continuous Discovery PM (Torres, Cagan) · Contrarian Skeptic (DHH, Fried) · Information Architect (Covert, Morville).
-
-**Convergence across all four voices:**
-1. **These are tasks, not journeys.** All four flagged it. The drafts describe *what users do with the catalog*, not the underlying job/progress/outcome. Each journey should be rewritten as a progress statement with functional + emotional + social dimensions.
-2. **J1 (Seeker) and J2 (Reviewer) are the core.** J3, J4, J5, J6 are variously called "catalog-maintenance LARP," "built for imagined community," "premature governance," "vestigial." Strong case to defer or cut until the core is proven.
-3. **Vocabulary is unsettled.** "Persona," "archetype," "exemplar," "expert," "critic," "advisor" all doing work. Must pick a controlled vocabulary *before* journeys can be finalized.
-4. **The catalog's job vs. raw LLM is undefended.** If a frontier model given a README produces 80-90% as good a critique cold, what exactly is this adding? Needs an explicit answer.
-
-**Sharpest unique points (one per voice, preserved because they don't blend):**
-- *JTBD:* The real job is emotional — "I suspect my thinking is incomplete and I don't want to ship a blind spot." Current drafts miss this entirely. Add the social dimension too ("I pressure-tested this against X").
-- *Discovery PM:* Zero evidence. Prototype the workflow in a Google Doc with three humans before building retrieval. Define the week-3 behavioral change that signals this is worth maintaining.
-- *Skeptic:* You have a folder of markdown, not a catalog product — that's a feature, not a limitation. J3 = PR. J4 = read your own catalog. J5 = `ls`. J6 = `git commit`.
-- *IA:* Add **J0 — Orienteer**: "What kind of thing is this catalog and what are its parts?" Nothing else works without this. Dimensions are upstream of every other journey — name them first.
-
-**Implications:**
-- Likely revise to a smaller journey set: J0 (Orienteer), J1 (Seeker), J2 (Reviewer), with Calibrator folded into contribution/maintenance.
-- Vocabulary lock-in precedes journey finalization.
-- Need an explicit statement of what the catalog adds over raw LLM prompting.
-- Round 2 (synthesis) can stress-test these implications before we commit.
-
----
-
-## Open decisions
-
-- [ ] **FIRST move** — pick one (or hybrid): IA vocabulary-first, CDPM switch interviews, Skeptic manual Google Doc test, JTBD regret-shipping interviews. My read: hybrid manual-test captures all four signals cheapest.
-- [ ] **Rename "persona"** — "archetype" (IA) or something else. Current term collides with UX usage. Needs deciding before docs stabilize.
-- [ ] **What this adds over raw LLM** — current strongest answer: *provenance* and the *social/emotional job*, not critique quality. Confirm or revise.
-- [ ] **Is the demand moment recurring?** Needs evidence — informs whether this is a product or a one-off pattern.
-- [ ] **J0 Orienteer** — standalone journey (IA), folded into Seeker (JTBD), or cut (Skeptic/CDPM)?
-- [ ] **Does the archetype abstraction earn its keep** vs. named individuals (Skeptic's remaining concern)?
-- [ ] Persona/archetype file format (the atomic unit — highest-leverage decision)
-- [ ] Schema / controlled vocabulary for dimensions (IA flagged as upstream of J1/J5)
-- [ ] Retrieval mechanism (INDEX.md structure + slash command shape)
-- [ ] Seed set — which 5-10 archetypes to build first to stress-test the format
-- [ ] Invocation workflow docs (Round 1 / Round 2)
-- [ ] Contribution rules (coherence test, duplicate check, split/merge criteria)
-
----
-
-## Decisions made
-
-- **Two journeys, not six.** Get the Crew + Run the Critique. Everything else (contribute, maintain, browse, calibrate, orient) is either an inline sub-step, a filesystem operation, or falls out of the two real journeys. See "The simple version" above.
-- **Contribution is demand-driven, not speculative.** Adding an archetype happens inline inside Journey 1 when a gap is detected during crew assembly — the moment user motivation is highest. Not its own journey.
-- **Seeker journey grounded and validated** via role-play against a concrete example (stock-chart ML idea). Full spec: [`design/journey-seeker.md`](design/journey-seeker.md). Key shape: **Capture → Read → Reflect → Confirm/Redirect.** The Reflect step does double duty — proves understanding *and* sharpens the problem before critique even starts. Fixed crew of ~4 non-overlapping archetypes with one named alternative swap.
-
----
-
-## Pattern validation notes (meta)
-
-From dogfooding the Wrecking Crew pattern on the journey design itself:
-- **Round 1 stayed distinct.** The four critiques do not blend — each reads as its claimed archetype. First real evidence the archetype-with-exemplars format produces differentiated critique.
-- **Subagents work well** for Round 1 — natural parallelism, no cross-contamination, each stays in voice.
-- The persona prompt shape that worked: *name + exemplars + shared philosophy + what they push on + blind spots + stay-in-character instruction*. These fields may be the seed of the archetype format.
-- **Round 2 did NOT degrade to mush.** All four held their ground on specific points, engaged others' arguments directly, and produced concrete revised proposals. Tensions visible and productive (vocabulary-first vs. prototype-first; raw LLM vs. provenance value). Evidence the pattern's synthesis phase works when the archetypes are well-differentiated to start.
-- **The explicit "stay in character, don't capitulate to seem reasonable" instruction mattered.** Without it, Round 2 likely collapses toward consensus.
-- **The Round 2 output structure that worked:** *agree (genuine) / hold ground (and why) / revised proposal / first move / one remaining concern.* Structure forces productive disagreement and a concrete takeaway.
-- The orchestrator (the main assistant) still needs to do a final meta-synthesis. Four distinct proposals ≠ a plan. Worth capturing in the invocation workflow docs later.
+- **Format and coherence test:** [`SCHEMA.md`](SCHEMA.md)
+- **Copy-paste template:** [`TEMPLATE.md`](TEMPLATE.md)
+- **Contribute an archetype:** [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- **Worked example, end-to-end:** [`examples/stock-ml-use-case.md`](examples/stock-ml-use-case.md)
+- **Distribution refactor plan:** `/Users/t/.claude/plans/read-plan-md-curious-hamster.md`

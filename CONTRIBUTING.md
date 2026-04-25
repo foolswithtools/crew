@@ -1,6 +1,8 @@
-# Contributing to The Wrecking Crew
+# Contributing to Crew
 
 This catalog only stays useful if every archetype is a coherent school of thought, not a stretched group of people who happen to share a tag. The format is simple, but the bar is real. This document is the bar.
+
+> **Two flows, same destination.** If you're a maintainer with this repo cloned, edit `personas/` directly — the post-write hook validates and rebuilds derived artifacts on every save. If you're an end user (catalog installed at `~/.crew/`), let `/crew` draft inline when it hits a gap; the file lands in `~/.crew/personas/<slug>.md` and the slash command rebuilds your local catalog. Either way, opening a PR with the new persona file lands it in the upstream catalog.
 
 ## Who this is for
 
@@ -12,17 +14,16 @@ You should be contributing to this catalog if:
 
 You should *not* be contributing if you're trying to add your favorite famous person, build out a category for completeness, or import a list of "important thinkers" from somewhere. The catalog grows where pull exists.
 
-## One-time setup
+## One-time setup (maintainer flow only)
 
-Phase 3 scripts (embeddings, semantic dedupe, graph) rely on a few Python deps. Create a repo-local venv and install them once:
+End users don't need this — `crew install` handles their setup. For maintainers cloning the repo to add or edit archetypes:
 
 ```bash
-uv venv venv --python 3.12   # or: python3.12 -m venv venv
-source venv/bin/activate
-uv pip install -r requirements.txt   # or: pip install -r requirements.txt
+uv venv venv --python 3.12
+uv pip install -e . --python venv/bin/python3
 ```
 
-The `venv/` directory is gitignored. The post-write hook automatically uses `venv/bin/python3` when present; if the venv is absent, the core P1/P2 flow (validator, index, Jaccard dedupe) still works — just the embedding-related steps are skipped with a notice.
+This creates a repo-local venv, installs the `crew` package editable (giving you `crew` and `crew-mcp` on the venv's PATH), and pulls in the embedding deps. The `venv/` directory is gitignored. The post-write hook in `.claude/settings.json` re-execs through `venv/bin/python3` when present; if the venv is absent, the core flow (validator, index, Jaccard dedupe) still works — just the embedding-related steps gracefully degrade.
 
 ## How to add an archetype by hand
 
@@ -38,7 +39,7 @@ Use the catalog normally. When `/crew` says "Missing: …", reply `draft it`. `/
 2. **Apply the coherence test before you start writing.** Pick 2-5 real exemplars. Ask: *could these people sit on a panel and agree on ~80% of first principles about how to approach their craft?* If you hesitate, the archetype is incoherent — split it. See [`SCHEMA.md`](SCHEMA.md) for the test in detail.
 3. **Fill in the frontmatter.** Pick tags only from the controlled vocabulary in [`vocab/expertise.yml`](vocab/expertise.yml), [`vocab/function.yml`](vocab/function.yml), and [`vocab/approach.yml`](vocab/approach.yml). If nothing fits, see "Proposing a new tag" below.
 4. **Write all five prose sections** with real specificity, not placeholders. The format is in [`SCHEMA.md`](SCHEMA.md).
-5. **Run the validator.** `python3 scripts/validate.py personas/<your-slug>.md`. Exit code 0 = pass. Fix any errors; warnings are advisory but worth investigating.
+5. **Run the validator.** `crew validate personas/<your-slug>.md` (maintainer flow inside the source repo) or `crew validate $(crew home)/personas/<your-slug>.md` (end-user flow). Exit code 0 = pass. Fix any errors; warnings are advisory but worth investigating.
 6. **Open a PR.** See "Review criteria" below for what reviewers will look at.
 
 ## The coherence test (non-negotiable)
@@ -68,7 +69,7 @@ The validator catches the easy cases (duplicate `name`, fully-contained exemplar
 
 Reviewers will check:
 
-- **Validator passes.** `python3 scripts/validate.py` returns 0 with no errors. Warnings are explained in the PR description.
+- **Validator passes.** `crew validate` returns 0 with no errors. Warnings are explained in the PR description.
 - **Coherence test holds.** The "Exemplars & coherence" paragraph genuinely argues the ~80% agreement, doesn't paper over a real philosophical split.
 - **Voice lines are specific.** "What they push on" reads as something *this archetype* would say, not something any rigorous person would say. `"What's your out-of-sample protocol?"` beats `"They would care about validation."`
 - **Blind spots are honest.** Every school misses something. If you can't name what this one misses, you don't understand it well enough yet.

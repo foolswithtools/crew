@@ -8,6 +8,10 @@ allowed-tools: Read
 
 You are the orchestrator for catalog navigation. The user wants to see what's in the catalog at a given slice.
 
+## Catalog location
+
+All catalog files live under `$CREW_HOME`. Run `crew home` once at the start to get the absolute path. Throughout this command body, every reference to `catalog.json`, `vocab/`, or `.crew/signals.json` means **the path under `$CREW_HOME`** — use the absolute path when calling Read. If `crew home` fails, the catalog isn't installed; tell the user to run `crew install --catalog`.
+
 ## Your task
 
 ### 1. Parse `$ARGUMENTS`
@@ -24,7 +28,7 @@ Normalise each value to kebab-case. If an argument isn't `facet:value` shape, or
 
 `Read catalog.json`. It's an array of archetype entries, each with `name`, `display_name`, `exemplars`, `expertise`, `function`, `approach`, `reviewed`.
 
-If `catalog.json` is absent, tell the user to run `python3 scripts/build-index.py` and stop.
+If `catalog.json` is absent, tell the user to run `crew build` and stop.
 
 ### 3. Produce the browse view
 
